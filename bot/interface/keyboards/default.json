@@ -1,0 +1,33 @@
+{
+  "one_time": false,
+  "buttons": [
+    [{
+      "action": {
+        "type": "text",
+        "label": "Следующий/ая"
+      },
+      "color": "positive"
+    },
+      {
+        "action": {
+          "type": "text",
+          "label": "Параметры поиска"
+        },
+        "color": "positive"
+      }],
+    [{
+        "action": {
+          "type": "text",
+          "label": "Добавить в избранное"
+        },
+        "color": "positive"
+      },
+     {
+      "action": {
+        "type": "text",
+        "label": "Добавить в черный список"
+      },
+      "color": "positive"
+    }]
+  ]
+}
