@@ -1,0 +1,40 @@
+{
+  "one_time": false,
+  "buttons": [
+    [{
+      "action": {
+        "type": "text",
+        "label": "Следующий/ая"
+      },
+      "color": "primary"
+    }],
+    [{
+        "action": {
+          "type": "text",
+          "label": "Добавить в избранное"
+        },
+        "color": "positive"
+      },
+     {
+      "action": {
+        "type": "text",
+        "label": "Добавить в черный список"
+      },
+      "color": "negative"
+    }],
+    [{
+      "action": {
+        "type": "text",
+        "label": "Список избранных"
+      },
+      "color": "primary"
+    },
+      {
+        "action": {
+          "type": "text",
+          "label": "Изменить параметры поиска"
+        },
+        "color": "primary"
+      }]
+  ]
+}

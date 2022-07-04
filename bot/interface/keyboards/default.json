@@ -4,30 +4,9 @@
     [{
       "action": {
         "type": "text",
-        "label": "Следующий/ая"
+        "label": "Начать поиск"
       },
-      "color": "positive"
-    },
-      {
-        "action": {
-          "type": "text",
-          "label": "Параметры поиска"
-        },
-        "color": "positive"
-      }],
-    [{
-        "action": {
-          "type": "text",
-          "label": "Добавить в избранное"
-        },
-        "color": "positive"
-      },
-     {
-      "action": {
-        "type": "text",
-        "label": "Добавить в черный список"
-      },
-      "color": "positive"
+      "color": "primary"
     }]
   ]
 }

@@ -29,14 +29,13 @@ class Server:
         # Словарь дял каждого отдельного пользователя
         self.users = {}
 
-    def send_msg(self, send_id, message):
+    def send_msg(self, send_id, message, path):
         """
         Отправка сообщения через метод messages.send
         :param send_id: vk id пользователя, который получит сообщение
         :param message: содержимое отправляемого письма
         :return: None
         """
-        path = os.path.join("bot", "interface", "keyboards", "default.json")
         # print(os.getcwd())
         return self.vk_api.messages.send(peer_id=send_id,
                                          message=message,
@@ -52,7 +51,8 @@ class Server:
 
                 # Пришло новое сообщение
                 if event.type == VkBotEventType.MESSAGE_NEW:
-                    self.send_msg(event.message.peer_id, self.users[event.message.from_id].input(event.message.text))
+                    result = self.users[event.message.from_id].input(event.message.text)
+                    self.send_msg(event.message.peer_id, result[0], result[1])
 
     def get_user_name(self, user_id):
         """ Получаем имя пользователя"""
