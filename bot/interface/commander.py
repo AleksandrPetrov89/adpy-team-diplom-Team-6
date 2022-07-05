@@ -3,14 +3,13 @@ import os
 
 class Commander:
 
-    # Команды
-
     def __init__(self):
 
         self.mode = "default"
         self.search_options = {"Пол": None, "Мин. возраст": None, "Макс. возраст": None, "Счетчик": 0}
         # Для запоминания ответов пользователя
         self.last_ans = None
+        self.result = None
         self.path = os.path.join("bot", "interface", "keyboards", "default.json")
 
     def input(self, msg):
@@ -20,19 +19,23 @@ class Commander:
         :return: Ответ пользователю, отправившему сообщение
         """
         next_contender = "Следующий/ая"
-        search_options = "Изменить параметры поиска"
         favorites = "Добавить в избранное"
         black_list = "Добавить в черный список"
         favorites_list = "Список избранных"
+        continue_searching = "Продолжить поиск"
+        remove = "Удалить из избранного"
         start = "Начать поиск"
+        photo_1, photo_2, photo_3 = "Фото 1", "Фото 2", "Фото 3"
+        like = "Поставить лайк"
+        revoke_like = "Убрать лайк"
 
         self.last_ans = msg
 
         if self.mode == "default":
             if start in msg:
-                self.mode = "options"
-                answer = "Введите параметры поиска.\nКого ищем: мужчину или женщину(м/ж): "
-                self.path = os.path.join("bot", "interface", "keyboards", "options.json")
+                self.mode = "search"
+                answer = "search"
+                self.path = os.path.join("bot", "interface", "keyboards", "search.json")
                 result = [answer, self.path]
                 return result
             else:
@@ -41,24 +44,26 @@ class Commander:
                 return result
 
         if self.mode == "favorites":
-            pass
 
-        if self.mode == "options":
-            if self.search_options["Пол"] is None:
-                self.search_options["Пол"] = msg
-                answer = "Введите минимальный возраст партнера: "
+            if next_contender in msg:
+                answer = next_contender
                 result = [answer, self.path]
                 return result
-            if self.search_options["Мин. возраст"] is None:
-                self.search_options["Мин. возраст"] = msg
-                answer = "Введите максимальный возраст партнера: "
+
+            if remove in msg:
+                answer = remove
                 result = [answer, self.path]
                 return result
-            if self.search_options["Макс. возраст"] is None:
-                self.search_options["Макс. возраст"] = msg
+
+            if continue_searching in msg:
                 self.mode = "search"
+                answer = continue_searching
                 self.path = os.path.join("bot", "interface", "keyboards", "search.json")
-                answer = "Параметры поиска установлены!"
+                result = [answer, self.path]
+                return result
+
+            else:
+                answer = "Команда не распознана!"
                 result = [answer, self.path]
                 return result
 
@@ -67,14 +72,7 @@ class Commander:
             if next_contender in msg:
                 answer = next_contender
                 result = [answer, self.path]
-                return result
-
-            if search_options in msg:
-                self.search_options = {"Пол": None, "Мин. возраст": None, "Макс. возраст": None, "Счетчик": 0}
-                self.mode = "options"
-                answer = "Введите параметры поиска.\nКого ищем: мужчину или женщину(м/ж): "
-                self.path = os.path.join("bot", "interface", "keyboards", "options.json")
-                result = [answer, self.path]
+                self.result = result
                 return result
 
             if favorites in msg:
@@ -88,7 +86,54 @@ class Commander:
                 return result
 
             if favorites_list in msg:
+                self.mode = "favorites"
                 answer = favorites_list
+                self.path = os.path.join("bot", "interface", "keyboards", "favorites.json")
+                result = [answer, self.path]
+                return result
+
+            if photo_1 in msg:
+                self.mode = "photo"
+                answer = photo_1
+                self.path = os.path.join("bot", "interface", "keyboards", "photo.json")
+                result = [answer, self.path]
+                return result
+
+            if photo_2 in msg:
+                self.mode = "photo"
+                answer = photo_2
+                self.path = os.path.join("bot", "interface", "keyboards", "photo.json")
+                result = [answer, self.path]
+                return result
+
+            if photo_3 in msg:
+                self.mode = "photo"
+                answer = photo_3
+                self.path = os.path.join("bot", "interface", "keyboards", "photo.json")
+                result = [answer, self.path]
+                return result
+
+            else:
+                answer = "Команда не распознана!"
+                result = [answer, self.path]
+                return result
+
+        if self.mode == "photo":
+
+            if like in msg:
+                answer = like
+                result = [answer, self.path]
+                return result
+
+            if revoke_like in msg:
+                answer = revoke_like
+                result = [answer, self.path]
+                return result
+
+            if continue_searching in msg:
+                self.mode = "search"
+                answer = continue_searching
+                self.path = os.path.join("bot", "interface", "keyboards", "search.json")
                 result = [answer, self.path]
                 return result
 

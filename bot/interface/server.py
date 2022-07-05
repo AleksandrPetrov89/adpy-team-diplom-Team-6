@@ -1,4 +1,3 @@
-import os
 import random
 
 import vk_api.vk_api
@@ -21,17 +20,18 @@ class Server:
         self.vk = vk_api.VkApi(token=api_token)
 
         # Для использоания Long Poll API
-        self.long_poll = VkBotLongPoll(self.vk, group_id, wait=20)
+        self.long_poll = VkBotLongPoll(self.vk, group_id, wait=30)
 
         # Для вызова методов vk_api
         self.vk_api = self.vk.get_api()
 
-        # Словарь дял каждого отдельного пользователя
+        # Словарь для каждого отдельного пользователя
         self.users = {}
 
     def send_msg(self, send_id, message, path):
         """
         Отправка сообщения через метод messages.send
+        :param path: путь к файлу с кнопками
         :param send_id: vk id пользователя, который получит сообщение
         :param message: содержимое отправляемого письма
         :return: None
@@ -53,11 +53,3 @@ class Server:
                 if event.type == VkBotEventType.MESSAGE_NEW:
                     result = self.users[event.message.from_id].input(event.message.text)
                     self.send_msg(event.message.peer_id, result[0], result[1])
-
-    def get_user_name(self, user_id):
-        """ Получаем имя пользователя"""
-        return self.vk_api.users.get(user_id=user_id)[0]['first_name']
-
-    def get_user_city(self, user_id):
-        """ Получаем город пользователя"""
-        return self.vk_api.users.get(user_id=user_id, fields="city")[0]["city"]['title']
