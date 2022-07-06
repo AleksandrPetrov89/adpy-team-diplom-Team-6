@@ -1,0 +1,54 @@
+{
+  "one_time": false,
+  "buttons": [
+    [{
+      "action": {
+        "type": "text",
+        "label": "Следующий/ая"
+      },
+      "color": "primary"
+    }],
+    [{
+        "action": {
+          "type": "text",
+          "label": "Фото 1"
+        },
+        "color": "secondary"
+      },
+      {
+      "action": {
+        "type": "text",
+        "label": "Фото 2"
+      },
+      "color": "secondary"
+    },
+     {
+      "action": {
+        "type": "text",
+        "label": "Фото 3"
+      },
+      "color": "secondary"
+    }],
+    [{
+        "action": {
+          "type": "text",
+          "label": "Добавить в избранное"
+        },
+        "color": "positive"
+      },
+      {
+      "action": {
+        "type": "text",
+        "label": "Список избранных"
+      },
+      "color": "primary"
+    },
+     {
+      "action": {
+        "type": "text",
+        "label": "Добавить в черный список"
+      },
+      "color": "negative"
+    }]
+  ]
+}
