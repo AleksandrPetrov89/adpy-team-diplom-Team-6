@@ -40,7 +40,7 @@ class TableDb:
         tables_list = []
         sql_table = 'CREATE TABLE IF NOT EXISTS'
         dict_tables = {
-            'user_data': ['user_id INTEGER PRIMARY KEY,', 'profile_link VARCHAR(60),',
+            'user_data': ['user_id INTEGER NOT NULL PRIMARY KEY,', 'profile_link VARCHAR(60),',
                           'age INTEGER CHECK(age<150),', 'first_name VARCHAR(40),', 'last_name VARCHAR(40),',
                           'sex INTEGER,', 'city VARCHAR(60),', 'token VARCHAR(120),', 'groups INTEGER,',
                           'interests TEXT,', 'music TEXT,', 'books TEXT,',
