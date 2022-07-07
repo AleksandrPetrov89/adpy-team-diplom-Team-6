@@ -1,13 +1,13 @@
 import sqlalchemy
 from sqlalchemy_utils import database_exists, create_database
 
-# Класс Dating_Db для базы данных к чат-боту Dating на VK
-class Dating_Db:
+# Класс DatingDb для базы данных к чат-боту Dating на VK
+class DatingDb:
     """
 
     """
 
-    # Функция инициализации класса Dating_Db
+    # Функция инициализации класса DatingDb
     def __init__(self, data_base, user):
         """
         :param data_base:
@@ -34,7 +34,7 @@ class Dating_Db:
          и пользователя 'user_dating'.
         :return: result_db, result_user
         """
-        pswd = Dating_Db.sql_psw(Dating_Db(self.data_base, self.user))
+        pswd = DatingDb.sql_psw(DatingDb(self.data_base, self.user))
         db = f'postgresql://postgres:{pswd}@localhost:5432/{self.data_base}'
         engine = sqlalchemy.create_engine(db)
         if not database_exists(engine.url):

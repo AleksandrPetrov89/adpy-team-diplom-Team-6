@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS user_data (
-	id SERIAL PRIMARY KEY,
-	user_id INTEGER NOT NULL, 
+	user_id INTEGER PRIMARY KEY,
 	profile_link VARCHAR(60) NOT NULL,
                 age INTEGER CHECK(age<150),
 	first_name VARCHAR(40),
@@ -18,18 +17,11 @@ CREATE TABLE IF NOT EXISTS user_data (
 );
 
 CREATE TABLE IF NOT EXISTS elected_list (
-	id SERIAL PRIMARY KEY,
-	date_creating DATE,
-                user_data_id INTEGER NOT NULL REFERENCES user_data(id)
+                user_data_user_id INTEGER NOT NULL REFERENCES user_data(user_id),
+	bot_user_user_id INTEGER NOT NULL REFERENCES user_data(user_id)
 );
 
 CREATE TABLE IF NOT EXISTS black_list (
-	id SERIAL PRIMARY KEY,
-	user_data_id INTEGER NOT NULL REFERENCES user_data(id)
-);
-
-CREATE TABLE IF NOT EXISTS bot_user (
-	id SERIAL PRIMARY KEY,
-	user_data_id INTEGER NOT NULL REFERENCES user_data(id),
-                elected_list_id INTEGER NOT NULL REFERENCES elected_list(id)
+	user_data_user_id INTEGER NOT NULL REFERENCES user_data(user_id)
+	bot_user_user_id INTEGER NOT NULL REFERENCES user_data(user_id)
 );
