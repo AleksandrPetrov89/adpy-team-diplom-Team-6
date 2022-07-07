@@ -3,6 +3,7 @@ import requests
 import os
 import json
 import re
+from datetime import datetime
 from datetime import date
 
 
@@ -33,46 +34,47 @@ class VKApiRequests:
 
     #Сбор данных из профиля и распределение по атрибутам
     def _get_init_user_info(self):
-        METHOD = 'users.get'
+        method = 'users.get'
         params = {
             'user_ids': self.user_id,
             'fields': 'bdate, sex, city, music, interests, books',
             'access_token': self.user_token,
             'v': '5.131'
         }
-        user_info = requests.get(VKApiRequests.URL + METHOD, params=params).json()
+        resp = requests.get(VKApiRequests.URL + method, params=params).json()
+        check_errors(resp, self.user_id)
+        giui_user_info = resp.json()
         self.viewed_users_id = []
-        self.first_name = user_info['response'][0]['first_name']
-        self.second_name = user_info['response'][0]['last_name']
-        self.sex = user_info['response'][0]['sex']
-        if len(user_info['response'][0]['bdate'].split('.')) == 3:
-            birth_year = user_info['response'][0]['bdate'][-1:-4]
+        self.first_name = giui_user_info['response'][0]['first_name']
+        self.second_name = giui_user_info['response'][0]['last_name']
+        self.sex = giui_user_info['response'][0]['sex']
+        if len(giui_user_info['response'][0]['bdate'].split('.')) == 3:
+            birth_year = giui_user_info['response'][0]['bdate'][-1:-4]
         else:
-            # вызов функции бота для запроса года рождения
-            birth_year = give_me_birth_year()
-        self.age = int(birth_year) - int(date.today()[:4])
-        if user_info['response'][0]['city']['id'] == '' or user_info['response'][0]['city']['id'] is None:
-            a # Вызов функции бота для запроса города поиска
-            city_name = give_me_city()
-            a # Определение id города по имени
-            city_id = self._get_city_id(city_name)
+            birth_year = None
+        if birth_year:
+            self.age = int(date.today()[:4]) - int(birth_year)
         else:
-            city_id = user_info['response'][0]['city']['id']
+            self.age = None
+        if giui_user_info['response'][0]['city']['id'] == '' or giui_user_info['response'][0]['city']['id'] is None:
+            city_id = None
+        else:
+            city_id = giui_user_info['response'][0]['city']['id']
         self.city_id = city_id
-        if user_info['response'][0]['interests'] is None or user_info['response'][0]['interests'] == '':
+        if giui_user_info['response'][0]['interests'] is None or giui_user_info['response'][0]['interests'] == '':
             interests = None
         else:
-            interests = user_info['response'][0]['interests']
+            interests = giui_user_info['response'][0]['interests']
         self.interests = interests
-        if user_info['response'][0]['music'] is None or user_info['response'][0]['music'] == '':
+        if giui_user_info['response'][0]['music'] is None or giui_user_info['response'][0]['music'] == '':
             music = None
         else:
-            music = user_info['response'][0]['music']
+            music = giui_user_info['response'][0]['music']
         self.music = music
-        if user_info['response'][0]['books'] is None or user_info['response'][0]['books'] == '':
+        if giui_user_info['response'][0]['books'] is None or giui_user_info['response'][0]['books'] == '':
             books = None
         else:
-            books = user_info['response'][0]['books']
+            books = giui_user_info['response'][0]['books']
         self.books = books
         self.groups = self._get_user_groups(self.user_id)
         self.offset = 0
@@ -81,8 +83,25 @@ class VKApiRequests:
         elif self.sex == 2:
             self.partner_sex = self.sex - 1
 
+    def is_city_byear_exists(self):
+        if self.age is None and self.city_id is None:
+            result = 1
+        elif self.age is None and self.city_id:
+            result = 2
+        elif self.age and self.city_id is None:
+            result = 3
+        else:
+            result = 0
+        return result
+
+    def give_me_city_byear(self, city_name=None, birth_year=None):
+        if city_name:
+            self.city_id = self._get_city_id(city_name)
+        if birth_year:
+            self.age = int(date.today()[:4]) - int(birth_year)
+
     def _get_city_id(self, name):
-        METHOD = 'database.getCities'
+        method = 'database.getCities'
         params = {
             'country_id': 1,
             'q': name,
@@ -90,18 +109,22 @@ class VKApiRequests:
             'access_token': self.user_token,
             'v': '5.131'
         }
-        result = requests.get(VKApiRequests.URL + METHOD, params=params).json()['response']['items']['id']
+        resp = requests.get(VKApiRequests.URL + method, params=params)
+        check_errors(resp, self.user_id)
+        result = resp.json()['response']['items']['id']
         return result
 
     def _get_user_groups(self, id_):
-        METHOD = 'groups.get'
+        method = 'groups.get'
         params = {
             'user_id': id_,
             'count': 1000,
             'access_token': self.user_token,
             'v': '5.131'
         }
-        result = requests.get(VKApiRequests.URL + METHOD, params=params).json()['response']['items']
+        resp = requests.get(VKApiRequests.URL + method, params=params)
+        check_errors(resp, self.user_id)
+        result = resp.json()['response']['items']
         return result
 
     def give_me_candidates(self):
@@ -133,7 +156,7 @@ class VKApiRequests:
 
     # Собираем список подходящих кандидатов
     def _get_candidates(self):
-        METHOD = 'users.search'
+        method = 'users.search'
         params = {
             'offset': self.offset,
             'count': 1000,
@@ -145,7 +168,9 @@ class VKApiRequests:
             'access_token': self.user_token,
             'v': '5.131'
         }
-        match_users_raw = requests.get(VKApiRequests.URL + METHOD, params=params).json()
+        resp = requests.get(VKApiRequests.URL + method, params=params)
+        check_errors(resp, self.user_id)
+        match_users_raw = resp.json()
         for users in match_users_raw['response']['items']:
             m_user_id = users.values()['id']
             m_first_name = users.values()['first_name']
@@ -153,7 +178,7 @@ class VKApiRequests:
             m_age = 0
             if len(users.values()['bdate'].split('.')) == 3:
                 m_birth_year = users.values()['bdate'][-1:-4]
-                m_age = int(m_birth_year) - int(date.today()[:4])
+                m_age = int(date.today()[:4]) - int(m_birth_year)
             else:
                 continue
             m_interests = users.values()['interests']
@@ -204,7 +229,7 @@ class VKApiRequests:
         self.offset += 999
 
     def _get_photo_links(self, owner_id):
-        METHOD = 'photos.get'
+        method = 'photos.get'
         params_profile = {
             'owner_id': owner_id,
             'album_id': 'profile',
@@ -219,8 +244,12 @@ class VKApiRequests:
             'access_token': self.user_token,
             'v': '5.131'
         }
-        photo_info_profile = requests.get(VKApiRequests.URL + METHOD, params=params_profile).json()
-        photo_info_with = requests.get(VKApiRequests.URL + METHOD, params=params_with).json()
+        resp_profile = requests.get(VKApiRequests.URL + method, params=params_profile)
+        check_errors(resp_profile, self.user_id)
+        photo_info_profile = resp_profile.json()
+        resp_with = requests.get(VKApiRequests.URL + method, params=params_with)
+        check_errors(resp_with, self.user_id)
+        photo_info_with = resp_with.json()
         profile_dict = self._raw_photo_dict(photo_info_profile)
         with_dict = self._raw_photo_dict(photo_info_with)
         photo_dict = profile_dict | with_dict
@@ -244,5 +273,27 @@ class VKApiRequests:
                 result_dict.pop(item)
         return result_dict
 
-    def smash_like(self):
-        pass
+    def smash_like(self, candidate_id, photo_id):
+        method = 'likes.add'
+        params = {
+            'type': 'photo',
+            'owner_id': candidate_id,
+            'item_id': photo_id,
+            'access_token': self.user_token,
+            'v': '5.131'
+        }
+        resp = requests.post(VKApiRequests.URL + method, params=params)
+        check_errors(resp, self.user_id)
+        result = 'Поставили лайк'
+        return result
+
+
+def check_errors(response, user_id):
+    resp_error = str(response).split()[1]
+    with open('Errors/vk_errors.json', 'r', encoding='utf-8') as f:
+        errors = json.load(f)
+        if resp_error in errors.keys():
+            with open(f'Logs/log_{user_id}.txt', 'a', encoding='utf-8') as file:
+                json.dumps(f'{datetime.now()}\nОшибка: {resp_error}\n{errors[resp_error]}\n-------\n')
+            result = 'Произошла непредвиденная ошибка! Пожалуйста, обратитесь к администратору или попробуйте позже.'
+            return result
