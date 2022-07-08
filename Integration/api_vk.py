@@ -7,6 +7,10 @@ from datetime import datetime
 from datetime import date
 
 
+# TODO Добавить проверку на дубль выдачи
+# TODO Добавить вывод, что в вашем городе подходящих кандидатов не осталось
+# TODO Добавить проверку на ЧС
+# TODO Добавить передачу инфы в БД
 class VKApiRequests:
     URL = 'https://api.vk.com/method/'
 
@@ -32,7 +36,6 @@ class VKApiRequests:
         else:
             self._get_init_user_info()
 
-    #Сбор данных из профиля и распределение по атрибутам
     def _get_init_user_info(self):
         method = 'users.get'
         params = {
@@ -84,6 +87,14 @@ class VKApiRequests:
             self.partner_sex = self.sex - 1
 
     def is_city_byear_exists(self):
+        """
+        Метод проверяет наличие данных о городе и годе рождения.
+        Выводит - int
+        1 - Надо получить и год, и город
+        2 - Надо получить только год
+        3 - Надо получить только город
+        0 - Всё есть, ничего не надо
+        """
         if self.age is None and self.city_id is None:
             result = 1
         elif self.age is None and self.city_id:
@@ -95,6 +106,9 @@ class VKApiRequests:
         return result
 
     def give_me_city_byear(self, city_name=None, birth_year=None):
+        """
+        Метод, который принимает полученную информацию от пользователя и вносит в атрибуты.
+        """
         if city_name:
             self.city_id = self._get_city_id(city_name)
         if birth_year:
@@ -128,6 +142,17 @@ class VKApiRequests:
         return result
 
     def give_me_candidates(self):
+        """
+        Метод запроса кандидатов.
+        Выводит словарь в формате
+            {
+             user_id(int): {
+                        'first_name': str,
+                        'last_name': str,
+                        'photo_links': [str,str,str...]
+             }
+        }
+        """
         if self.match_users:
             return self.match_users
         else:
@@ -135,6 +160,10 @@ class VKApiRequests:
             return self.match_users
 
     def save_session(self, candidate_id):
+        """
+        Метод удаляет из списка кандидатов последнего просмотренного
+        и сохраняет текущие данные пользователя и его списка кандидатов в файл сессии
+        """
         self.match_users.pop(candidate_id)
         dict_for_save = {
             'first_name': self.first_name,
@@ -156,10 +185,16 @@ class VKApiRequests:
 
     # Собираем список подходящих кандидатов
     def _get_candidates(self):
+        """
+        Метод собирает перечень из 1000 пользователей из указанного города, сортирует их по совпдаению на
+        возрастной диапазон, интересы, музыку, книги, группы, проверяет id кандидатов на предмет дубля выдачи
+        и формирует итоговый перечень кандидатов
+        """
         method = 'users.search'
         params = {
             'offset': self.offset,
             'count': 1000,
+            'status': 6,
             'fields': 'bdate, music, interests, books',
             'city': self.city_id,
             'country': 1,
@@ -173,9 +208,10 @@ class VKApiRequests:
         match_users_raw = resp.json()
         for users in match_users_raw['response']['items']:
             m_user_id = users.values()['id']
+            if m_user_id in self.viewed_users_id:
+                continue
             m_first_name = users.values()['first_name']
             m_last_name = users.values()['last_name']
-            m_age = 0
             if len(users.values()['bdate'].split('.')) == 3:
                 m_birth_year = users.values()['bdate'][-1:-4]
                 m_age = int(date.today()[:4]) - int(m_birth_year)
@@ -196,36 +232,39 @@ class VKApiRequests:
             }
             if m_age == self.age:
                 self.match_users[m_user_id] = match_users_dict
+                self.viewed_users_id.append(m_user_id)
                 continue
-            elif self.age - 10 <= m_age <= self.age - 1 or self.age + 1 <= m_age <= self.age + 10:
+            elif (self.age - 10 <= m_age <= self.age - 1 or self.age + 1 <= m_age <= self.age + 10) and m_age > 18:
+                cont_trigger = 0
                 if m_interests:
-                    cont_trigger = 0
                     for inter in m_interests:
                         if re.match(inter, self.interests, flags=0):
                             self.match_users[m_user_id] = match_users_dict
+                            self.viewed_users_id.append(m_user_id)
                             cont_trigger = 1
-                    if cont_trigger == 1:
+                    if cont_trigger:
                         continue
                 elif m_books:
-                    cont_trigger = 0
                     for book in m_books:
                         if re.match(book, self.books, flags=0):
                             self.match_users[m_user_id] = match_users_dict
+                            self.viewed_users_id.append(m_user_id)
                             cont_trigger = 1
-                    if cont_trigger == 1:
+                    if cont_trigger:
                         continue
                 elif m_music:
-                    cont_trigger = 0
                     for music in m_music:
                         if re.match(music, self.music, flags=0):
                             self.match_users[m_user_id] = match_users_dict
+                            self.viewed_users_id.append(m_user_id)
                             cont_trigger = 1
-                    if cont_trigger == 1:
+                    if cont_trigger:
                         continue
                 elif m_groups:
                     for group in m_groups:
                         if re.match(group, self.groups, flags=0):
                             self.match_users[m_user_id] = match_users_dict
+                            self.viewed_users_id.append(m_user_id)
         self.offset += 999
 
     def _get_photo_links(self, owner_id):
@@ -274,6 +313,16 @@ class VKApiRequests:
         return result_dict
 
     def smash_like(self, candidate_id, photo_id):
+        """
+        Получает id кандидата и id фото на которую ставить лайк.
+        Ставит лайк, отправляет данные в БД словарём в формате:
+            {
+             user_id(int): {
+                        'candidate_id': int,
+                        'photo_id': int
+             }
+         }
+        """
         method = 'likes.add'
         params = {
             'type': 'photo',
@@ -287,8 +336,14 @@ class VKApiRequests:
         result = 'Поставили лайк'
         return result
 
+    def delete_like(self, candidate_id, photo_id):
+        method = ''
+
 
 def check_errors(response, user_id):
+    """
+    Функция проверяет наличие ошибки в ответе на АПИ запрос, заносит ошибку в лог и выводит строку об ошибке
+    """
     resp_error = str(response).split()[1]
     with open('Errors/vk_errors.json', 'r', encoding='utf-8') as f:
         errors = json.load(f)
