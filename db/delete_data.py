@@ -64,7 +64,7 @@ class Disposal:
         after_del_list = list(set(after_del_list))
         print(after_del_list)
         return after_del_list
-    
+
 
 if __name__ == '__main__':
     # Disposal.del_id_blacklist(Disposal('db_dating', 'user_dating'))
