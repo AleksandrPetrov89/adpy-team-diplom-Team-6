@@ -50,7 +50,7 @@ class TableDb:
                            'bot_user_user_id INTEGER NOT NULL REFERENCES user_data(user_id)'],
             'photo_list' : ['id SERIAL PRIMARY KEY,', 'photo_link VARCHAR(120),', 'photo_id INTEGER,',
                        'user_data_user_id INTEGER NOT NULL REFERENCES user_data(user_id)'],
-            'likes_list' : ['id SERIAL PRIMARY KEY,', 'user_data_user_id INTEGER NOT '
+            'likes_list' : ['id SERIAL PRIMARY KEY,', 'user_data_id INTEGER NOT '
                             'NULL REFERENCES user_data(user_id),', 'photo_list_id INTEGER NOT NULL '
                             'REFERENCES photo_list(id)']
         }

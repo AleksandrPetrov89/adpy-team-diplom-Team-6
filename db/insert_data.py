@@ -63,25 +63,6 @@ class DataIn:
             read_list = list(item.strip() for item in read_data)
         return read_list
 
-    # # Функция поиска и замены спецсимвола % в ссылках и замена на %%, в противном случае
-    # # данные не записываются в таблицы
-    # def search_link_simbol(self):
-    #     """
-    #     :return: new_list_for_req
-    #     """
-    #     search_obj = DataIn.read_file(DataIn(self.filename, self.data_base, self.user))
-    #     new_list_for_req = []
-    #     for item in search_obj:
-    #         text_list = item.split(',')
-    #         indexes = [14, 24, 25, 26]
-    #         for index in indexes:
-    #             if '%' in text_list[index]:
-    #                 new_text_link = text_list[index].replace('%', '%%')
-    #                 text_list[index] = new_text_link
-    #         new_str_for_req = ','.join(text_list)
-    #         new_list_for_req.append(new_str_for_req)
-    #     return new_list_for_req
-
     # Функция заносит данные из файла Script_Insert_SQL_table_data.sql в таблицу user_data
     # Вносятся только новые, если какой-то пользователь в таблице есть, то не дублируется.
     def insert_user_table(self):
@@ -158,6 +139,7 @@ class DataIn:
             else:
                 connect.execute(req_sql)
         return insert_result, comment_result
+
 
 
 
