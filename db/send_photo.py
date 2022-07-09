@@ -16,7 +16,7 @@ class PhotoTransfer:
         """
         Функция likes_photo_output принимает на вход id пользователя и выводит список списков фотографий
         для пользователя user_id, на которых он поставил "лайк". Во внутренние списки помещена информация:
-        ссылка на фото (тип str), ID фотографии (тип int), ID пользователя , который поставил "лайк"
+        ссылка на фото (тип str), ID фотографии (тип int), ID пользователя, который поставил "лайк"
         на фото(тип данных int). В случае, если в БД нет пользователя с переданным на вход id,
         то возвращается пустой список. Выведенный список исключает повторение записей в нём.
         :return: result_lp_output_list
@@ -25,9 +25,9 @@ class PhotoTransfer:
         result_lp_output_list = []
         TableDb_obj = TableDb(self.data_base, self.user)
         connect = TableDb_obj.db_connect()
-        req_output = f'SELECT pl.photo_link, pl.photo_id, ll.user_data_id FROM photo_list pl ' \
-                     f'JOIN likes_list ll ON ll.photo_list_id = pl.id JOIN user_data ud ON ll.user_data_id = ud.user_id ' \
-                     f'WHERE ll.user_data_id = {user_id};'
+        req_output = f'SELECT pl.photo_link, pl.photo_id, ll.user_data_user_id FROM photo_list pl ' \
+                     f'JOIN likes_list ll ON ll.photo_list_id = pl.id JOIN user_data ud ON ' \
+                     f'll.user_data_user_id = ud.user_id WHERE ll.user_data_user_id = {user_id};'
         output_list = connect.execute(req_output).fetchall()
         for item_list in output_list:
             clean_id = ''

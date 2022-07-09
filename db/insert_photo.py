@@ -59,7 +59,7 @@ class Photo:
         return insert_photo_result
 
     # Функция получения фото c "лайком" в виде словаря.
-    def get_likes_photo(self, user_id=123456789, photo_id=5):
+    def get_likes_photo(self, user_id=123456789, photo_id=457239018):
         """
         :return: dict_likes_photo
         """
@@ -71,16 +71,23 @@ class Photo:
     # Функция заносит данные по "лайкнутым" фотографиям в таблицу likes_list.
     def in_likeslist_table(self):
         """
-        Функция внесения в БД данных о фотографиях, на которые поставили "лайк": ID фотографии, ID пользователя.
+        Функция внесения в БД данных о фотографиях, на которые поставили "лайк": ID фотографии, которая понравилась,
+         а также ID пользователя, который поставил лайк.
         :return: insert_photo_result
         """
+        id_list = []
         dict_obj = Photo(self.data_base, self.user)
         dict_photo = dict_obj.get_likes_photo()
         TableDb_obj = TableDb(self.data_base, self.user)
         connect = TableDb_obj.db_connect()
         for key, value in dict_photo.items():
-            req_sql = f"INSERT INTO likes_list(user_data_id, photo_list_id) VALUES({key}, {value});"
-            insert_photo_result = connect.execute(req_sql)
+            req_search_id = f'SELECT id FROM photo_list WHERE photo_id={value};'
+            list_photo_list_id = connect.execute(req_search_id).fetchall()
+            for item in list_photo_list_id:
+                for id_value in item:
+                    id_list.append(id_value)
+                    req_sql = f"INSERT INTO likes_list(user_data_user_id, photo_list_id) VALUES({key}, {id_value});"
+                    insert_photo_result = connect.execute(req_sql)
         return insert_photo_result
 
 if __name__ == '__main__':
