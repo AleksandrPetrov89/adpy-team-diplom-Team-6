@@ -13,7 +13,7 @@ class Photo:
 
 
     # Функция получения фото в виде словаря.
-    def get_photo(self, user_id=123456789, photo_link='https://vk.com/id715243021?z=photo715243021_457239017%2Fphotos715243021', photo_id=457239017):
+    def get_photo(self, user_id=987654321, photo_link='https://vk.com/id715243021?z=photo715243021_457239017%2Fphotos555666777', photo_id=457239018):
         """
         :return: dict_photo
         """
@@ -59,7 +59,7 @@ class Photo:
         return insert_photo_result
 
     # Функция получения фото c "лайком" в виде словаря.
-    def get_likes_photo(self, user_id=123456789, photo_id=4):
+    def get_likes_photo(self, user_id=123456789, photo_id=5):
         """
         :return: dict_likes_photo
         """
