@@ -43,7 +43,6 @@ class PhotoTransfer:
                 new_item[1] = int(new_item[1])
             if new_item[2].isdigit():
                 new_item[2] = int(new_item[2])
-        print(result_lp_output_list)
         return result_lp_output_list
 
 

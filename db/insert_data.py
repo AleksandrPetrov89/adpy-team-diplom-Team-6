@@ -13,34 +13,31 @@ class DataIn:
         self.user = user
 
 
-    # Функция получения данных в виде словаря
-    def get_data(self):
+    # Функция получения данных в виде словаря.
+    def get_data(self, user_id=555111666, profile_link='https://vk.com/id123456789', age=16, first_name='Ivan',
+                 last_name='Ivanov', sex=2, city='Moscow',
+                 token='58eb4fa4a72b028c214dd5c8786d23a7054577f0b5a2530d5459936a9b8f8f58d1edc970fd82581e3e904',
+                 groups=555666777, interests='спорт, рыбалка, кино, шахматы', music='рок, техно, джаз, "Битлз", '
+                        '"Дорз"', books='"ghghgh", "ghghgfk tutri", "cbdjdj sletykym"'):
         """
 
         """
         dict_user = {
-                    123456789 : ['https://vk.com/id123456789', 16, 'Ivan', 'Ivanov', 'Moscow',
-                    'fdjfhdjfhdjfdjd85588gjgfjkgfkk5885485486965u569gjjg',
-                    555555555, '', '', 'jtrgrotjgjrotoj'],
-                    987654321 : ['https://vk.com/id563456789', 45, 'Ighkjfgjgf', 'fjhgdfkj', 'Kirov',
-                    'fdjfhdjfhdjfdjd85588gjgfjkgfkk58rhtrhtrhtrht54455456456grgjg',
-                    195967986, 'bgbkhkg', 'bdfbdbggbd', 'bdfgbdbgdggbdbgfgbdfbf'],
-                    321654321 : ['https://vk.com/id563456789', 32, 'Ighkjfgjgf', 'fjhgdfkj', 'Kirov',
-                     'fdjfhdjfhdjfdjd85588gjgfjkgfkk58rhtrhtrhtrht54455456456grgjg',
-                     215967986, 'bgbkhkg', 'bdfbdbggbd', 'bdfgbdbgdggbdbgfgbdfbf']
+                    user_id : [profile_link, age, first_name, last_name, sex, city, token, groups, interests,
+                               music, books]
         }
         return dict_user
 
-    # Функция зыписывает данные, полученные из функции get_data в файл
+    # Функция зыписывает данные, полученные из функции get_data в файл Script_Insert_SQL_table_data.sql.
     def write_file(self):
         """
         :return: write_result
         """
         write_obj = DataIn(self.filename, self.data_base, self.user)
-        insert_text = 'INSERT INTO user_data(user_id, profile_link, age, first_name, last_name, city,' \
-                      ' token, groups, interests, music, books)'
         with open(self.filename, 'w', encoding='utf-8') as file:
             for keys, item in write_obj.get_data().items():
+                insert_text = 'INSERT INTO user_data(user_id, profile_link, age, first_name, last_name, sex, city,' \
+                              ' token, groups, interests, music, books)'
                 values_text = f' VALUES({keys}'
                 file.write(f'{insert_text}')
                 for elem in item:
@@ -63,19 +60,26 @@ class DataIn:
             read_list = list(item.strip() for item in read_data)
         return read_list
 
-    # Функция заносит данные из файла Script_Insert_SQL_table_data.sql в таблицу user_data
-    # Вносятся только новые, если какой-то пользователь в таблице есть, то не дублируется.
+    # Функция заносит данные из файла Script_Insert_SQL_table_data.sql в базу данных в таблицу user_data.
+    # Вносятся только новые данные, если какой-то пользователь в таблице есть, то не дублируется.
     def insert_user_table(self):
         """
+        Функция insert_user_table даёт возможность записывать данные о пользователях VK в базу данных.
+        Последовательность выполняемых операций: данные принимаются в функцию get_data в виде словаря, записываются
+        в файл Script_Insert_SQL_table_data.sql в виде SQL-запроса при помощи функции write_file, далее SQL-запрос
+        считывается функцией read_file и исполняется. Предусмотрено получение на вход данных в словаре с любым
+        количеством ключей. Если словарь пустой, то ничего в базу не записывается. Функция способна записывать в файл
+        и исполнять любое количество SQL-запросов.
         :return: insert_result, comment_result
         """
         TableDb_obj = TableDb(self.data_base, self.user)
         connect = TableDb_obj.db_connect()
 
         insert_user_obj = DataIn(self.filename, self.data_base, self.user)
+        insert_user_obj.write_file()
         insert_list_data = insert_user_obj.read_file()
         insert_result = True
-        comment_result = 'Все записи сделаны!'
+        comment_result = 'Запись успешно осуществлена!'
         for item in insert_list_data:
             try:
                 connect.execute(item.strip())
@@ -144,7 +148,6 @@ class DataIn:
 
 
 if __name__ == '__main__':
-    # DataIn.write_file(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
-    # DataIn.insert_user_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
+    DataIn.insert_user_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
     # DataIn.in_blacklist_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
-    DataIn.in_elected_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
+    # DataIn.in_elected_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
