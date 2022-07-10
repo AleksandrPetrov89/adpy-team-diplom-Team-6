@@ -1,11 +1,19 @@
-from create_user_db import Dating_Db
-from create_table import Table_Db
+from create_user_db import DatingDb
+from create_table import TableDb
+
+
+
 
 
 
 
 if __name__ == '__main__':
-    db_user_obj = Dating_Db('db_dating', 'user_dating')
+    # Создание базы данных и пользователя
+    db_user_obj = DatingDb('db_dating', 'user_dating')
     db_user_obj.db_user_create()
-    table_db_obj = Table_Db('db_dating', 'user_dating')
-    table_db_obj.create_tables()
+
+    # Создание всех таблиц в соответствии с заданием
+    TableDb_obj = TableDb('db_dating', 'user_dating')
+    TableDb_obj.create_tables()
+
+

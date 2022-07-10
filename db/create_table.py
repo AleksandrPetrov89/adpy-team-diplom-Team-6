@@ -1,13 +1,13 @@
 import sqlalchemy
-from create_user_db import Dating_Db
+from create_user_db import DatingDb
 
 #
-class Table_Db:
+class TableDb:
     """
 
     """
 
-    # Функция инициализации класса Table_Db
+    # Функция инициализации класса TableDb
     def __init__(self, data_base, user):
         """
 
@@ -23,7 +23,7 @@ class Table_Db:
 
         :return: connect
         """
-        pswd = Dating_Db.sql_psw(Dating_Db)
+        pswd = DatingDb.sql_psw(DatingDb)
         user_db = f'postgresql://{self.user}:{pswd}@localhost:5432/{self.data_base}'
         engine = sqlalchemy.create_engine(user_db)
         connect = engine.connect()
@@ -35,22 +35,24 @@ class Table_Db:
         Функция create_tables создаёт нужное кол-во таблиц и в конце работы выводит их список.
         :return: tables_list
         """
-        table_db_obj = Table_Db(self.data_base, self.user)
-        connect = table_db_obj.db_connect()
+        TableDb_obj = TableDb(self.data_base, self.user)
+        connect = TableDb_obj.db_connect()
         tables_list = []
         sql_table = 'CREATE TABLE IF NOT EXISTS'
         dict_tables = {
-            'user_data': ['id SERIAL PRIMARY KEY,', 'user_id INTEGER NOT NULL,', 'profile_link VARCHAR(60) NOT NULL,',
+            'user_data': ['user_id INTEGER NOT NULL PRIMARY KEY,', 'profile_link VARCHAR(60),',
                           'age INTEGER CHECK(age<150),', 'first_name VARCHAR(40),', 'last_name VARCHAR(40),',
-                          'sex INTEGER,', 'city VARCHAR(60),', 'token VARCHAR(80),', 'groups INTEGER,',
-                          'interests VARCHAR(100),', 'music VARCHAR(100),', 'books VARCHAR(100),',
-                          'photo_link_1 VARCHAR(60) NOT NULL,', 'photo_link_2 VARCHAR(60) NOT NULL,',
-                          'photo_link_3 VARCHAR(60) NOT NULL'],
-            'elected_list': ['id SERIAL PRIMARY KEY,', 'date_creating DATE,',
-                             'user_data_id INTEGER NOT NULL REFERENCES user_data(id)'],
-            'black_list': ['id SERIAL PRIMARY KEY,', 'user_data_id INTEGER NOT NULL REFERENCES user_data(id)'],
-            'bot_user': ['id SERIAL PRIMARY KEY,', 'user_data_id INTEGER NOT NULL REFERENCES user_data(id),',
-                         'elected_list_id INTEGER NOT NULL REFERENCES elected_list(id)']
+                          'sex INTEGER,', 'city VARCHAR(60),', 'token VARCHAR(120),', 'groups INTEGER,',
+                          'interests TEXT,', 'music TEXT,', 'books TEXT'],
+            'elected_list': ['user_data_user_id INTEGER NOT NULL REFERENCES user_data(user_id),',
+                             'bot_user_user_id INTEGER NOT NULL REFERENCES user_data(user_id)'],
+            'black_list': ['user_data_user_id INTEGER NOT NULL REFERENCES user_data(user_id),',
+                           'bot_user_user_id INTEGER NOT NULL REFERENCES user_data(user_id)'],
+            'photo_list' : ['id SERIAL PRIMARY KEY,', 'photo_link VARCHAR(120),', 'photo_id INTEGER,',
+                       'user_data_user_id INTEGER NOT NULL REFERENCES user_data(user_id)'],
+            'likes_list' : ['id SERIAL PRIMARY KEY,', 'user_data_user_id INTEGER NOT '
+                            'NULL REFERENCES user_data(user_id),', 'photo_list_id INTEGER NOT NULL '
+                            'REFERENCES photo_list(id)']
         }
         for tbl_name, tbl_col in dict_tables.items():
             if tbl_name == 'user_data':
@@ -58,9 +60,11 @@ class Table_Db:
                 for item in range(len(tbl_col)):
                     req += f"{tbl_col[item]} "
                 req = req + ");"
-            elif tbl_name == 'black_list':
+            elif tbl_name == 'black_list' or tbl_name == 'elected_list':
                 req = f"{sql_table} {tbl_name} ({tbl_col[0]} {tbl_col[1]});"
-            elif tbl_name == 'bot_user' or 'elected_list':
+            elif tbl_name == 'photo_list':
+                req = f"{sql_table} {tbl_name} ({tbl_col[0]} {tbl_col[1]} {tbl_col[2]} {tbl_col[3]});"
+            elif tbl_name == 'likes_list':
                 req = f"{sql_table} {tbl_name} ({tbl_col[0]} {tbl_col[1]} {tbl_col[2]});"
             connect.execute(req)
             tables_list.append(tbl_name)
