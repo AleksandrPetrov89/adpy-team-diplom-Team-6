@@ -48,18 +48,18 @@ class VKApiRequests:
             'access_token': self.user_token,
             'v': '5.131'
         }
-        resp = requests.get(VKApiRequests.URL + method, params=params).json()
+        resp = requests.get(VKApiRequests.URL + method, params=params)
         check_errors(resp, self.user_id, '_get_init_user_info')
         giui_user_info = resp.json()
         self.first_name = giui_user_info['response'][0]['first_name']
         self.second_name = giui_user_info['response'][0]['last_name']
         self.sex = giui_user_info['response'][0]['sex']
         if len(giui_user_info['response'][0]['bdate'].split('.')) == 3:
-            birth_year = giui_user_info['response'][0]['bdate'][-1:-4]
+            birth_year = giui_user_info['response'][0]['bdate'][-4:]
         else:
             birth_year = None
         if birth_year:
-            self.age = int(date.today()[:4]) - int(birth_year)
+            self.age = int(date.today().strftime('%Y')) - int(birth_year)
         else:
             self.age = None
         if giui_user_info['response'][0]['city']['title'] == '' or giui_user_info['response'][0]['city']['title'] is None:
@@ -93,11 +93,11 @@ class VKApiRequests:
         elif self.sex == 2:
             self.partner_sex = self.sex - 1
 
-    def is_city_byear_exists(self):
-        """Метод проверяет наличие данных о городе и годе рождения.
+    def is_city_age_exists(self):
+        """Метод проверяет наличие данных о городе и возрасте.
         Выводит - int
-        1 - Надо получить и год, и город
-        2 - Надо получить только год
+        1 - Надо получить и возраст, и город
+        2 - Надо получить только возраст
         3 - Надо получить только город
         0 - Всё есть, ничего не надо
         """
@@ -111,15 +111,15 @@ class VKApiRequests:
             result = 0
         return result
 
-    def give_me_city_byear(self, city_name=None, birth_year=None):
-        """Метод, который принимает от пользователя название города для поиска кандидатов и(или) год рождения
+    def give_me_city_age(self, city_name=None, age=None):
+        """Метод, который принимает от пользователя название города для поиска кандидатов и(или) свой возраст
         и вносит в атрибуты.
         """
         if city_name:
             self.city_name = city_name
             self.city_id = self._get_city_id(city_name)
-        if birth_year:
-            self.age = int(date.today()[:4]) - int(birth_year)
+        if age:
+            self.age = age
 
     def _get_city_id(self, name):
         """Внутренний метод получения id города по названию
@@ -245,7 +245,7 @@ class VKApiRequests:
             m_last_name = users.values()['last_name']
             if len(users.values()['bdate'].split('.')) == 3:
                 m_birth_year = users.values()['bdate'][-1:-4]
-                m_age = int(date.today()[:4]) - int(m_birth_year)
+                m_age = int(date.today().strftime('%Y')) - int(m_birth_year)
             else:
                 continue
             m_interests = users.values()['interests']
