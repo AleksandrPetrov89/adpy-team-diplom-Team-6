@@ -1,5 +1,4 @@
-from db.create_table import TableDb
-
+from create_table import TableDb
 
 #
 class Disposal:
@@ -22,8 +21,8 @@ class Disposal:
         :return: after_del_list
         """
         after_del_list = []
-        table_db_obj = TableDb(self.data_base, self.user)
-        connect = table_db_obj.db_connect()
+        TableDb_obj = TableDb(self.data_base, self.user)
+        connect = TableDb_obj.db_connect()
         req_del_id_bl = f'DELETE FROM black_list WHERE bot_user_user_id={user_id} AND user_data_user_id={del_user_id};'
         connect.execute(req_del_id_bl)
         req_del_check = f'SELECT user_data_user_id FROM black_list WHERE bot_user_user_id={user_id};'
@@ -35,7 +34,6 @@ class Disposal:
                     clean_id += symbol
             after_del_list.append(int(clean_id))
         after_del_list = list(set(after_del_list))
-        print(after_del_list)
         return after_del_list
 
     # Функция удаления из списка Избранных базы данных ID пользователя (del_user_id) для пользователя user_id.
@@ -49,8 +47,8 @@ class Disposal:
         :return: after_del_list
         """
         after_del_list = []
-        table_db_obj = TableDb(self.data_base, self.user)
-        connect = table_db_obj.db_connect()
+        TableDb_obj = TableDb(self.data_base, self.user)
+        connect = TableDb_obj.db_connect()
         req_del_id_el = f'DELETE FROM elected_list WHERE bot_user_user_id={user_id} AND ' \
                         f'user_data_user_id={del_user_id};'
         connect.execute(req_del_id_el)
@@ -63,10 +61,9 @@ class Disposal:
                     clean_id += symbol
             after_del_list.append(int(clean_id))
         after_del_list = list(set(after_del_list))
-        print(after_del_list)
         return after_del_list
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
     # Disposal.del_id_blacklist(Disposal('db_dating', 'user_dating'))
-    # Disposal.del_id_electlist(Disposal('db_dating', 'user_dating'))
+    Disposal.del_id_electlist(Disposal('db_dating', 'user_dating'))

@@ -1,6 +1,6 @@
 import sqlalchemy
-from sqlalchemy import exc
 from sqlalchemy_utils import database_exists, create_database
+from sqlalchemy import exc
 
 
 # Класс DatingDb для базы данных к чат-боту Dating на VK
@@ -18,8 +18,8 @@ class DatingDb:
         self.data_base = data_base
         self.user = user
 
-    # Функция чтения и возврата пароля из файла sqlpsw.txt
     @staticmethod
+    # Функция чтения и возврата пароля из файла sqlpsw.txt
     def sql_psw():
         """
         Функция sql_psw предназначена для чтения и возврата пароля

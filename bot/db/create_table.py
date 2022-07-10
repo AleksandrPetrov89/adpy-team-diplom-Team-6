@@ -1,6 +1,5 @@
 import sqlalchemy
-from db.create_user_db import DatingDb
-
+from create_user_db import DatingDb
 
 #
 class TableDb:
@@ -36,8 +35,8 @@ class TableDb:
         Функция create_tables создаёт нужное кол-во таблиц и в конце работы выводит их список.
         :return: tables_list
         """
-        tabledb_obj = TableDb(self.data_base, self.user)
-        connect = tabledb_obj.db_connect()
+        TableDb_obj = TableDb(self.data_base, self.user)
+        connect = TableDb_obj.db_connect()
         tables_list = []
         sql_table = 'CREATE TABLE IF NOT EXISTS'
         dict_tables = {
@@ -46,25 +45,25 @@ class TableDb:
                           'sex INTEGER,', 'city VARCHAR(60),', 'token VARCHAR(120),', 'groups INTEGER,',
                           'interests TEXT,', 'music TEXT,', 'books TEXT'],
             'elected_list': ['user_data_user_id INTEGER NOT NULL REFERENCES user_data(user_id),',
-                             'bot_user_user_id INTEGER NOT NULL REFERENCES user_data(user_id)'],
+                             'bot_user_user_id INTEGER NOT NULL REFERENCES user_data(user_id),',
+                             'CONSTRAINT pk_el PRIMARY KEY (user_data_user_id, bot_user_user_id)'],
             'black_list': ['user_data_user_id INTEGER NOT NULL REFERENCES user_data(user_id),',
-                           'bot_user_user_id INTEGER NOT NULL REFERENCES user_data(user_id)'],
-            'photo_list': ['id SERIAL PRIMARY KEY,', 'photo_link VARCHAR(120),', 'photo_id INTEGER,',
-                           'user_data_user_id INTEGER NOT NULL REFERENCES user_data(user_id)'],
-            'likes_list': ['id SERIAL PRIMARY KEY,', 'user_data_user_id INTEGER NOT '
-                                                     'NULL REFERENCES user_data(user_id),',
-                           'photo_list_id INTEGER NOT NULL '
-                           'REFERENCES photo_list(id)']
+                           'bot_user_user_id INTEGER NOT NULL REFERENCES user_data(user_id),',
+                           'CONSTRAINT pk_bl PRIMARY KEY (user_data_user_id, bot_user_user_id)'],
+            'photo_list' : ['id SERIAL PRIMARY KEY,', 'photo_link VARCHAR(120),', 'photo_id INTEGER,',
+                       'user_data_user_id INTEGER NOT NULL REFERENCES user_data(user_id)'],
+            'likes_list' : ['id SERIAL PRIMARY KEY,', 'user_data_user_id INTEGER NOT '
+                            'NULL REFERENCES user_data(user_id),', 'photo_list_id INTEGER NOT NULL '
+                            'REFERENCES photo_list(id)']
         }
         for tbl_name, tbl_col in dict_tables.items():
-            req = ""
             if tbl_name == 'user_data':
                 req = f"{sql_table} {tbl_name} ("
                 for item in range(len(tbl_col)):
                     req += f"{tbl_col[item]} "
                 req = req + ");"
             elif tbl_name == 'black_list' or tbl_name == 'elected_list':
-                req = f"{sql_table} {tbl_name} ({tbl_col[0]} {tbl_col[1]});"
+                req = f"{sql_table} {tbl_name} ({tbl_col[0]} {tbl_col[1]} {tbl_col[2]});"
             elif tbl_name == 'photo_list':
                 req = f"{sql_table} {tbl_name} ({tbl_col[0]} {tbl_col[1]} {tbl_col[2]} {tbl_col[3]});"
             elif tbl_name == 'likes_list':
