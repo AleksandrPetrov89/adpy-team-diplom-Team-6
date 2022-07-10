@@ -5,7 +5,7 @@ class DelPhoto:
     """
 
     """
-    # Функция инициализации класса Disposal
+    # Функция инициализации класса DelPhoto.
     def __init__(self, data_base, user):
         self.data_base = data_base
         self. user = user
