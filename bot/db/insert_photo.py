@@ -1,5 +1,5 @@
-import sqlalchemy
 from create_table import TableDb
+
 
 #
 class Photo:
@@ -11,9 +11,9 @@ class Photo:
         self.data_base = data_base
         self.user = user
 
-
     # Функция получения фото в виде словаря.
-    def get_photo(self, user_id=987654321, photo_link='https://vk.com/id715243021?z=photo715243021_457239017%2Fphotos555666777', photo_id=457239018):
+    def get_photo(self, user_id=987654321, photo_link='https://vk.com/id715243021?z=photo715243021_'
+                                                      '457239017%2Fphotos555666777', photo_id=457239018):
         """
         :return: dict_photo
         """
@@ -50,8 +50,8 @@ class Photo:
         """
         dict_obj = Photo(self.data_base, self.user)
         dict_photo = dict_obj.search_link_symbol()
-        TableDb_obj = TableDb(self.data_base, self.user)
-        connect = TableDb_obj.db_connect()
+        table_db_obj = TableDb(self.data_base, self.user)
+        connect = table_db_obj.db_connect()
         for key, value in dict_photo.items():
             req_sql = f"INSERT INTO photo_list(photo_link, photo_id, user_data_user_id) VALUES('{value[0]}'," \
                       f" {value[1]}, {key});"
@@ -78,8 +78,8 @@ class Photo:
         id_list = []
         dict_obj = Photo(self.data_base, self.user)
         dict_photo = dict_obj.get_likes_photo()
-        TableDb_obj = TableDb(self.data_base, self.user)
-        connect = TableDb_obj.db_connect()
+        table_db_obj = TableDb(self.data_base, self.user)
+        connect = table_db_obj.db_connect()
         for key, value in dict_photo.items():
             req_search_id = f'SELECT id FROM photo_list WHERE photo_id={value};'
             list_photo_list_id = connect.execute(req_search_id).fetchall()
@@ -90,7 +90,7 @@ class Photo:
                     insert_photo_result = connect.execute(req_sql)
         return insert_photo_result
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # Photo.search_link_symbol(Photo('db_dating', 'user_dating'))
     # Photo.in_photolist_table(Photo('db_dating', 'user_dating'))
-    Photo.in_likeslist_table(Photo('db_dating', 'user_dating'))
+    # Photo.in_likeslist_table(Photo('db_dating', 'user_dating'))

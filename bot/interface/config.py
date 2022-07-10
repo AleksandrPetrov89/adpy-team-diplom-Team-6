@@ -5,8 +5,3 @@ vk_api_token = "token"
 id_applications = 8209029
 
 version_vk_api = 5.131
-
-
-
-
-

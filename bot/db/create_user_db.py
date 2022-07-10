@@ -1,5 +1,7 @@
 import sqlalchemy
+from sqlalchemy import exc
 from sqlalchemy_utils import database_exists, create_database
+
 
 # Класс DatingDb для базы данных к чат-боту Dating на VK
 class DatingDb:
@@ -17,7 +19,8 @@ class DatingDb:
         self.user = user
 
     # Функция чтения и возврата пароля из файла sqlpsw.txt
-    def sql_psw(self):
+    @staticmethod
+    def sql_psw():
         """
         Функция sql_psw предназначена для чтения и возврата пароля
         из файла sqlpsw.txt
@@ -34,7 +37,7 @@ class DatingDb:
          и пользователя 'user_dating'.
         :return: result_db, result_user
         """
-        pswd = DatingDb.sql_psw(DatingDb(self.data_base, self.user))
+        pswd = DatingDb.sql_psw()
         db = f'postgresql://postgres:{pswd}@localhost:5432/{self.data_base}'
         engine = sqlalchemy.create_engine(db)
         if not database_exists(engine.url):

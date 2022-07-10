@@ -1,5 +1,6 @@
 import sqlalchemy
-from create_user_db import DatingDb
+from db.create_user_db import DatingDb
+
 
 #
 class TableDb:
@@ -23,7 +24,7 @@ class TableDb:
 
         :return: connect
         """
-        pswd = DatingDb.sql_psw(DatingDb)
+        pswd = DatingDb.sql_psw()
         user_db = f'postgresql://{self.user}:{pswd}@localhost:5432/{self.data_base}'
         engine = sqlalchemy.create_engine(user_db)
         connect = engine.connect()
@@ -35,8 +36,8 @@ class TableDb:
         Функция create_tables создаёт нужное кол-во таблиц и в конце работы выводит их список.
         :return: tables_list
         """
-        TableDb_obj = TableDb(self.data_base, self.user)
-        connect = TableDb_obj.db_connect()
+        tabledb_obj = TableDb(self.data_base, self.user)
+        connect = tabledb_obj.db_connect()
         tables_list = []
         sql_table = 'CREATE TABLE IF NOT EXISTS'
         dict_tables = {
@@ -48,13 +49,15 @@ class TableDb:
                              'bot_user_user_id INTEGER NOT NULL REFERENCES user_data(user_id)'],
             'black_list': ['user_data_user_id INTEGER NOT NULL REFERENCES user_data(user_id),',
                            'bot_user_user_id INTEGER NOT NULL REFERENCES user_data(user_id)'],
-            'photo_list' : ['id SERIAL PRIMARY KEY,', 'photo_link VARCHAR(120),', 'photo_id INTEGER,',
-                       'user_data_user_id INTEGER NOT NULL REFERENCES user_data(user_id)'],
-            'likes_list' : ['id SERIAL PRIMARY KEY,', 'user_data_user_id INTEGER NOT '
-                            'NULL REFERENCES user_data(user_id),', 'photo_list_id INTEGER NOT NULL '
-                            'REFERENCES photo_list(id)']
+            'photo_list': ['id SERIAL PRIMARY KEY,', 'photo_link VARCHAR(120),', 'photo_id INTEGER,',
+                           'user_data_user_id INTEGER NOT NULL REFERENCES user_data(user_id)'],
+            'likes_list': ['id SERIAL PRIMARY KEY,', 'user_data_user_id INTEGER NOT '
+                                                     'NULL REFERENCES user_data(user_id),',
+                           'photo_list_id INTEGER NOT NULL '
+                           'REFERENCES photo_list(id)']
         }
         for tbl_name, tbl_col in dict_tables.items():
+            req = ""
             if tbl_name == 'user_data':
                 req = f"{sql_table} {tbl_name} ("
                 for item in range(len(tbl_col)):

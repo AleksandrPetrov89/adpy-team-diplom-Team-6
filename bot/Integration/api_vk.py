@@ -1,4 +1,4 @@
-from config import vk_app_token
+from Integration.config import vk_app_token
 import requests
 import os
 import json
