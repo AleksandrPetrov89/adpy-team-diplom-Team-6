@@ -2,13 +2,6 @@
   "one_time": false,
   "buttons": [
     [{
-      "action": {
-        "type": "text",
-        "label": "Следующий/ая"
-      },
-      "color": "primary"
-    }],
-    [{
         "action": {
           "type": "text",
           "label": "Фото 1"
@@ -30,13 +23,27 @@
       "color": "secondary"
     }],
     [{
+      "action": {
+        "type": "text",
+        "label": "Следующий/ая"
+      },
+      "color": "primary"
+    }],
+    [{
         "action": {
           "type": "text",
-          "label": "Добавить в избранное"
+          "label": "В избранное"
         },
         "color": "positive"
       },
       {
+      "action": {
+        "type": "text",
+        "label": "В черный список"
+      },
+      "color": "negative"
+    }],
+    [{
       "action": {
         "type": "text",
         "label": "Список избранных"
@@ -46,9 +53,9 @@
      {
       "action": {
         "type": "text",
-        "label": "Добавить в черный список"
+        "label": "Черный список"
       },
-      "color": "negative"
+      "color": "primary"
     }]
   ]
 }

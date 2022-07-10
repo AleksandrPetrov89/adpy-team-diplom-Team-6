@@ -18,9 +18,9 @@
     [{
       "action": {
         "type": "text",
-        "label": "Удалить из избранного"
+        "label": "Удалить из ЧС"
       },
-      "color": "negative"
+      "color": "positive"
     }]
   ]
 }

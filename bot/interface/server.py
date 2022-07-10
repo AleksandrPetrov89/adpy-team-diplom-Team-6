@@ -4,7 +4,7 @@ import vk_api.vk_api
 from vk_api.bot_longpoll import VkBotEventType
 from vk_api.bot_longpoll import VkBotLongPoll
 
-from .commander import Commander
+from interface.commander import Commander
 
 
 class Server:
@@ -20,7 +20,7 @@ class Server:
         self.vk = vk_api.VkApi(token=api_token)
 
         # Для использоания Long Poll API
-        self.long_poll = VkBotLongPoll(self.vk, group_id, wait=30)
+        self.long_poll = VkBotLongPoll(self.vk, group_id, wait=20)
 
         # Для вызова методов vk_api
         self.vk_api = self.vk.get_api()
@@ -47,9 +47,14 @@ class Server:
             if event.type == VkBotEventType.MESSAGE_NEW:
 
                 if event.message.from_id not in self.users:
-                    self.users[event.message.from_id] = Commander()
+                    user_name = self.get_user_name(event.message.from_id)
+                    self.users[event.message.from_id] = Commander(vk_id=event.message.from_id, user_name=user_name)
 
                 # Пришло новое сообщение
                 if event.type == VkBotEventType.MESSAGE_NEW:
                     result = self.users[event.message.from_id].input(event.message.text)
                     self.send_msg(event.message.peer_id, result[0], result[1])
+
+    def get_user_name(self, user_id):
+        """ Получаем имя пользователя"""
+        return self.vk_api.users.get(user_id=user_id)[0]['first_name']
