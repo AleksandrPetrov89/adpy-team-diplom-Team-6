@@ -17,8 +17,9 @@ class VKApiRequests:
     def __init__(self, vk_user_id, vk_user_token):
         self.user_token = vk_user_token
         self.user_id = vk_user_id
-        if os.path.exists(f'Saved_sessions/Session_{self.user_id}.json'):
-            with open(f'Saved_sessions/Session_{self.user_id}.json', 'r', encoding='utf-8') as f:
+        path_saved = os.path.join("Integration", "Saved_sessions", f"Session_{self.user_id}.json")
+        if os.path.exists(path_saved):
+            with open(path_saved, 'r', encoding='utf-8') as f:
                 self.user_info = json.load(f)
                 self.first_name = self.user_info['first_name']
                 self.second_name = self.user_info['second_name']
@@ -44,7 +45,7 @@ class VKApiRequests:
             'access_token': self.user_token,
             'v': '5.131'
         }
-        resp = requests.get(VKApiRequests.URL + method, params=params).json()
+        resp = requests.get(VKApiRequests.URL + method, params=params)
         check_errors(resp, self.user_id)
         giui_user_info = resp.json()
         self.viewed_users_id = []
@@ -52,11 +53,11 @@ class VKApiRequests:
         self.second_name = giui_user_info['response'][0]['last_name']
         self.sex = giui_user_info['response'][0]['sex']
         if len(giui_user_info['response'][0]['bdate'].split('.')) == 3:
-            birth_year = giui_user_info['response'][0]['bdate'][-1:-4]
+            birth_year = giui_user_info['response'][0]['bdate'][-4:]
         else:
             birth_year = None
         if birth_year:
-            self.age = int(date.today()[:4]) - int(birth_year)
+            self.age = int(date.today().strftime('%Y')) - int(birth_year)
         else:
             self.age = None
         if giui_user_info['response'][0]['city']['id'] == '' or giui_user_info['response'][0]['city']['id'] is None:
@@ -90,17 +91,14 @@ class VKApiRequests:
         """
         Метод проверяет наличие данных о городе и годе рождения.
         Выводит - int
-        1 - Надо получить и год, и город
-        2 - Надо получить только год
-        3 - Надо получить только город
+        1 - Надо получить год
+        2 - Надо получить город
         0 - Всё есть, ничего не надо
         """
-        if self.age is None and self.city_id is None:
+        if self.age is None:
             result = 1
-        elif self.age is None and self.city_id:
+        elif self.city_id is None:
             result = 2
-        elif self.age and self.city_id is None:
-            result = 3
         else:
             result = 0
         return result
@@ -112,7 +110,7 @@ class VKApiRequests:
         if city_name:
             self.city_id = self._get_city_id(city_name)
         if birth_year:
-            self.age = int(date.today()[:4]) - int(birth_year)
+            self.age = int(date.today().strftime("%Y")) - int(birth_year)
 
     def _get_city_id(self, name):
         method = 'database.getCities'
@@ -345,10 +343,12 @@ def check_errors(response, user_id):
     Функция проверяет наличие ошибки в ответе на АПИ запрос, заносит ошибку в лог и выводит строку об ошибке
     """
     resp_error = str(response).split()[1]
-    with open('Errors/vk_errors.json', 'r', encoding='utf-8') as f:
+    path_errors = os.path.join("Integration", "Errors", "vk_errors.json")
+    with open(path_errors, 'r', encoding='utf-8') as f:
         errors = json.load(f)
         if resp_error in errors.keys():
-            with open(f'Logs/log_{user_id}.txt', 'a', encoding='utf-8') as file:
-                json.dumps(f'{datetime.now()}\nОшибка: {resp_error}\n{errors[resp_error]}\n-------\n')
+            path_logs = os.path.join("Logs", f"log_{user_id}.txt")
+            with open(path_logs, 'a', encoding='utf-8') as file:
+                json.dump(f'{datetime.now()}\nОшибка: {resp_error}\n{errors[resp_error]}\n-------\n', file)
             result = 'Произошла непредвиденная ошибка! Пожалуйста, обратитесь к администратору или попробуйте позже.'
             return result

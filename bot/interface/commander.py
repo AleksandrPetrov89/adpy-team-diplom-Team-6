@@ -2,6 +2,7 @@ import os
 import re
 
 from interface import commander_config
+from Integration.api_vk import VKApiRequests
 
 
 class Commander:
@@ -9,12 +10,13 @@ class Commander:
 
         self.id = vk_id
         self.token = None
+        self.bot_user = None
         self.user_name = user_name
         self.mode = "default"
         self.search_options = {"Пол": None, "Мин. возраст": None, "Макс. возраст": None, "Счетчик": 0}
         self.last_ans = None
         self.result = None
-        self.path = os.path.join("bot", "interface", "keyboards", "default.json")
+        self.path = os.path.join("interface", "keyboards", "default.json")
 
     def input(self, msg):
         """
@@ -41,6 +43,12 @@ class Commander:
         if self.mode == "photo":
             return self.processing_mode_photo(msg)
 
+        if self.mode == "b_year":
+            return self.processing_mode_b_year(msg)
+
+        if self.mode == "city":
+            return self.processing_mode_city(msg)
+
     def processing_mode_token(self, msg):
 
         request_token = commander_config.request_token
@@ -48,11 +56,8 @@ class Commander:
         pattern = "access_token=([^&]*)"
         if re.search(pattern, msg):
             self.token = re.search(pattern, msg).group(1)
-            self.mode = "search"
-            self.path = os.path.join("bot", "interface", "keyboards", "search.json")
-            answer = self.token
-            result = [answer, self.path]
-            return result
+            self.bot_user = VKApiRequests(self.id, self.token)
+            return self.b_year_city_check()
         else:
             answer = f"Ошибка! Попробуйте еще раз!\n\n" + request_token
             result = [answer, self.path]
@@ -64,7 +69,7 @@ class Commander:
         if start in msg:
             self.mode = "token"
             answer = request_token
-            self.path = os.path.join("bot", "interface", "keyboards", "none.json")
+            self.path = os.path.join("interface", "keyboards", "none.json")
             result = [answer, self.path]
             return result
         else:
@@ -92,7 +97,7 @@ class Commander:
         if continue_searching in msg:
             self.mode = "search"
             answer = continue_searching
-            self.path = os.path.join("bot", "interface", "keyboards", "search.json")
+            self.path = os.path.join("interface", "keyboards", "search.json")
             result = [answer, self.path]
             return result
 
@@ -119,7 +124,7 @@ class Commander:
         if continue_searching in msg:
             self.mode = "search"
             answer = continue_searching
-            self.path = os.path.join("bot", "interface", "keyboards", "search.json")
+            self.path = os.path.join("interface", "keyboards", "search.json")
             result = [answer, self.path]
             return result
 
@@ -158,35 +163,35 @@ class Commander:
         if favorites_list in msg:
             self.mode = "favorites"
             answer = favorites_list
-            self.path = os.path.join("bot", "interface", "keyboards", "favorites.json")
+            self.path = os.path.join("interface", "keyboards", "favorites.json")
             result = [answer, self.path]
             return result
 
         if blacklist in msg:
             self.mode = "blacklist"
             answer = blacklist
-            self.path = os.path.join("bot", "interface", "keyboards", "blacklist.json")
+            self.path = os.path.join("interface", "keyboards", "blacklist.json")
             result = [answer, self.path]
             return result
 
         if photo_1 in msg:
             self.mode = "photo"
             answer = photo_1
-            self.path = os.path.join("bot", "interface", "keyboards", "photo.json")
+            self.path = os.path.join("interface", "keyboards", "photo.json")
             result = [answer, self.path]
             return result
 
         if photo_2 in msg:
             self.mode = "photo"
             answer = photo_2
-            self.path = os.path.join("bot", "interface", "keyboards", "photo.json")
+            self.path = os.path.join("interface", "keyboards", "photo.json")
             result = [answer, self.path]
             return result
 
         if photo_3 in msg:
             self.mode = "photo"
             answer = photo_3
-            self.path = os.path.join("bot", "interface", "keyboards", "photo.json")
+            self.path = os.path.join("interface", "keyboards", "photo.json")
             result = [answer, self.path]
             return result
 
@@ -214,7 +219,7 @@ class Commander:
         if continue_searching in msg:
             self.mode = "search"
             answer = continue_searching
-            self.path = os.path.join("bot", "interface", "keyboards", "search.json")
+            self.path = os.path.join("interface", "keyboards", "search.json")
             result = [answer, self.path]
             return result
 
@@ -222,3 +227,38 @@ class Commander:
             answer = "Команда не распознана!"
             result = [answer, self.path]
             return result
+
+    def b_year_city_check(self):
+        if self.bot_user.is_city_byear_exists() == 0:
+            self.mode = "search"
+            self.path = os.path.join("interface", "keyboards", "search.json")
+            answer = self.token
+            result = [answer, self.path]
+            return result
+        elif self.bot_user.is_city_byear_exists() == 1:
+            self.mode = "b_year"
+            self.path = os.path.join("interface", "keyboards", "none.json")
+            answer = f"{self.user_name}, пришлите год Вашего рождения, в формате четырехзначного числа" \
+                     f" (например: 1993), в ответном сообщении."
+            result = [answer, self.path]
+            return result
+        elif self.bot_user.is_city_byear_exists() == 2:
+            self.mode = "city"
+            self.path = os.path.join("interface", "keyboards", "none.json")
+            answer = f"{self.user_name}, укажите название города, в котором Вы проживаете, в ответном сообщении."
+            result = [answer, self.path]
+            return result
+
+    def processing_mode_b_year(self, msg):
+        pattern_b_year = "(19|20)\d{2}"
+        if re.search(pattern_b_year, msg):
+            b_year = re.search(pattern_b_year, msg).group(0)
+            self.bot_user.give_me_city_byear(birth_year=b_year)
+        return self.b_year_city_check()
+
+    def processing_mode_city(self, msg):
+        pattern_city = "[А-Я][а-я]+-*[А-Я]*[а-я]*[0-9]*"
+        if re.search(pattern_city, msg):
+            city = re.search(pattern_city, msg).group(0)
+            self.bot_user.give_me_city_byear(city_name=city)
+        return self.b_year_city_check()
