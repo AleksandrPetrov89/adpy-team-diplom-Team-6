@@ -4,9 +4,9 @@ import json
 import re
 from datetime import datetime
 from datetime import date
-from db.send_data import black_list_output
-from db.insert_data import get_data
-from db.insert_photo import get_photo
+import bot.db.send_data
+import bot.db.insert_data
+import bot.db.insert_photo
 
 
 class VKApiRequests:
@@ -16,6 +16,10 @@ class VKApiRequests:
         """Принимает id и токен пользователя, общающегося с ботом и либо собирает данные через API,
         либо подгружает и файла сохранённой сессии, при наличии
         """
+        self.db_insert_photo_object = bot.db.insert_photo.Photo('db_dating', 'user_dating')
+        self.db_insert_data_object = bot.db.insert_data.DataIn('Script_Insert_SQL_table_data.sql',
+                                                               'db_dating', 'user_dating')
+        self.db_send_data_object = bot.db.send_data.Parcel('db_dating', 'user_dating')
         self.user_token = vk_user_token
         self.user_id = vk_user_id
         if os.path.exists(f'Saved_sessions/Session_{self.user_id}.json'):
@@ -168,8 +172,9 @@ class VKApiRequests:
              }
         }
         """
-        get_data(self.user_id, f'https://vk.com/id{self.user_id}', self.age, self.first_name, self.second_name,
-                 self.sex, self.city_name, self.user_token, self.groups, self.interests, self.music, self.books)
+        self.db_insert_data_object.get_data(self.user_id, f'https://vk.com/id{self.user_id}', self.age,
+                                            self.first_name, self.second_name, self.sex, self.city_name,
+                                            self.user_token, self.groups, self.interests, self.music, self.books)
         if self.match_users:
             return self.match_users
         else:
@@ -238,7 +243,7 @@ class VKApiRequests:
         match_users_raw = resp.json()
         for users in match_users_raw['response']['items']:
             m_user_id = users.values()['id']
-            blacklist = black_list_output(self.user_id)
+            blacklist = self.db_send_data_object.black_list_output(self.user_id)
             if m_user_id in blacklist:
                 continue
             m_first_name = users.values()['first_name']
@@ -329,7 +334,7 @@ class VKApiRequests:
         with_dict = self._raw_photo_dict(photo_info_with)
         photo_dict = profile_dict | with_dict
         for item, value in photo_dict.items():
-            get_photo(owner_id, value['photo_link'], item)
+            self.db_insert_photo_object.get_photo(owner_id, value['photo_link'], item)
         return photo_dict
 
     def _raw_photo_dict(self, api_response):
