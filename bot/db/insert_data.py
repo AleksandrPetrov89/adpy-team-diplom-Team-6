@@ -1,5 +1,6 @@
 import sqlalchemy
 from create_table import TableDb
+from sqlalchemy import exc
 
 #
 class DataIn:
@@ -90,7 +91,7 @@ class DataIn:
 
     # Функция заносит данные переданного пользователя в таблицу Избранных (elected_list),
     # пользователь вносится в поле user_data_user_id с проверкой дублирования.
-    def in_elected_table(self, user_bot=555111666, elected_user=222111888):
+    def in_elected_table(self, user_bot=123456789, elected_user=987654321):
         """
         Функция занесения пользователя в Избранные (таблица elected_list).
         ID выбранного пользователя помещается в поле user_data_user_id.
@@ -98,19 +99,21 @@ class DataIn:
         возвращается соответствующая информация.
         :return: insert_result, comment_result
         """
-        dict_blacklist_user = {user_bot : elected_user}
+        dict_electlist_user = {user_bot : elected_user}
         TableDb_obj = TableDb(self.data_base, self.user)
         connect = TableDb_obj.db_connect()
         insert_result = True
         comment_result = f'Запись {elected_user} внесена в список Избранных!'
-        for key, value in dict_blacklist_user.items():
+        for key, value in dict_electlist_user.items():
+            # Внесение данных о пользователях в таблицу Избранных.
             req_sql = f'INSERT INTO elected_list(user_data_user_id, bot_user_user_id) VALUES({value}, {key});'
             user_elect_exist = f'SELECT user_data_user_id, bot_user_user_id FROM elected_list' \
                                    f' WHERE user_data_user_id={elected_user} AND bot_user_user_id={user_bot};'
             is_exist = connect.execute(user_elect_exist).fetchall()
+            # Проверка внесения данных о пользователях в таблицу Избранных.
             if is_exist != []:
                 comment_result = f'Запись: {req_sql} в таблицу не сделана, т.к. пользователь {value} для пользователя' \
-                                 f' {key} в Избранных уже существует!'
+                                 f' {key} уже существует в списке Избранных!'
                 insert_result = False
             else:
                 connect.execute(req_sql)
@@ -118,7 +121,7 @@ class DataIn:
 
     # Функция заносит данные переданного пользователя в Чёрный список (black_list).
     # Заблокированный пользователь вносится в поле user_data_user_id с проверкой дублирования.
-    def in_blacklist_table(self, user_bot=222111888, blacklist_user=999111444):
+    def in_blacklist_table(self, user_bot=123456789, blacklist_user=987654321):
         """
         Функция занесения пользователя в Чёрный список (таблица black_list).
         ID заблокированного пользователя помещается в поле user_data_user_id.
@@ -148,6 +151,6 @@ class DataIn:
 
 
 if __name__ == '__main__':
-    DataIn.insert_user_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
-    # DataIn.in_blacklist_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
+    # DataIn.insert_user_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
+    DataIn.in_blacklist_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
     # DataIn.in_elected_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
