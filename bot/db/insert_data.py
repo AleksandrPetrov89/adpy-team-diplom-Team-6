@@ -1,13 +1,6 @@
 import sqlalchemy
-<<<<<<< HEAD
-from create_table import TableDb
 from sqlalchemy import exc
-=======
-import sqlalchemy.exc
-
-from db.create_table import TableDb
-
->>>>>>> f36b5a3daa9e34d6277b8e655bc641e4d8185543
+from create_table import TableDb
 
 #
 class DataIn:
@@ -107,15 +100,9 @@ class DataIn:
         возвращается соответствующая информация.
         :return: insert_result, comment_result
         """
-<<<<<<< HEAD
         dict_electlist_user = {user_bot : elected_user}
         TableDb_obj = TableDb(self.data_base, self.user)
         connect = TableDb_obj.db_connect()
-=======
-        dict_blacklist_user = {user_bot: elected_user}
-        table_db_obj = TableDb(self.data_base, self.user)
-        connect = table_db_obj.db_connect()
->>>>>>> f36b5a3daa9e34d6277b8e655bc641e4d8185543
         insert_result = True
         comment_result = f'Запись {elected_user} внесена в список Избранных!'
         for key, value in dict_electlist_user.items():
@@ -149,10 +136,12 @@ class DataIn:
         insert_result = True
         comment_result = f'Запись {blacklist_user} внесена в черный список!'
         for key, value in dict_blacklist_user.items():
+            # Внесение данных о пользователях в Черный список.
             req_sql = f'INSERT INTO black_list(user_data_user_id, bot_user_user_id) VALUES({value}, {key});'
             user_blacklist_exist = f'SELECT user_data_user_id, bot_user_user_id FROM black_list' \
                                    f' WHERE user_data_user_id={blacklist_user} AND bot_user_user_id={user_bot};'
             is_exist = connect.execute(user_blacklist_exist).fetchall()
+            # Проверка внесения данных о пользователях в Чёрный список.
             if is_exist != []:
                 comment_result = f'Запись: {req_sql} в таблицу не сделана, т.к. пользователь {value} для пользователя' \
                                  f' {key} уже существует в Чёрном списке!'
@@ -164,5 +153,5 @@ class DataIn:
 
 if __name__ == '__main__':
     # DataIn.insert_user_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
-    DataIn.in_blacklist_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
-    # DataIn.in_elected_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
+    # DataIn.in_blacklist_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
+    DataIn.in_elected_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))

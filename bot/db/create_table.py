@@ -1,6 +1,5 @@
 import sqlalchemy
-
-from db.create_user_db import DatingDb
+from create_user_db import DatingDb
 
 
 #
