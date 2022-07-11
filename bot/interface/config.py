@@ -1,6 +1,6 @@
 vk_group_id = 214303550
 
-vk_api_token = "token"
+vk_api_token = "токен сообщества"
 
 id_applications = 8209029
 

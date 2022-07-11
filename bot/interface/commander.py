@@ -1,22 +1,29 @@
 import os
 import re
+import json
 
 from interface import commander_config
 from Integration.api_vk import VKApiRequests
 
 
 class Commander:
+
     def __init__(self, vk_id, user_name):
 
         self.id = vk_id
-        self.token = None
-        self.bot_user = None
         self.user_name = user_name
-        self.mode = "default"
-        self.search_options = {"Пол": None, "Мин. возраст": None, "Макс. возраст": None, "Счетчик": 0}
-        self.last_ans = None
-        self.result = None
-        self.path = os.path.join("interface", "keyboards", "default.json")
+        path_file = os.path.join("interface", "options", f"options_{self.id}.txt")
+        if os.path.exists(path_file):
+            self.reading_parameters()
+            if self.token is not None:
+                self.bot_user = VKApiRequests(self.id, self.token)
+        else:
+            self.token = None
+            self.bot_user = None
+            self.mode = "default"
+            self.last_ans = None
+            self.result = None
+            self.path = os.path.join("interface", "keyboards", "default.json")
 
     def input(self, msg):
         """
@@ -52,7 +59,6 @@ class Commander:
     def processing_mode_token(self, msg):
 
         request_token = commander_config.request_token
-
         pattern = "access_token=([^&]*)"
         if re.search(pattern, msg):
             self.token = re.search(pattern, msg).group(1)
@@ -61,6 +67,7 @@ class Commander:
         else:
             answer = f"Ошибка! Попробуйте еще раз!\n\n" + request_token
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
     def processing_mode_default(self, msg):
@@ -71,11 +78,13 @@ class Commander:
             answer = request_token
             self.path = os.path.join("interface", "keyboards", "none.json")
             result = [answer, self.path]
+            self.saving_parameters()
             return result
         else:
             answer = f"Привет, {self.user_name}!\n" \
                      f"Для того чтобы начать поиск партнера нажмите 'Начать поиск'. Удачи, {self.user_name}!"
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
     def processing_mode_favorites(self, msg):
@@ -87,11 +96,13 @@ class Commander:
         if next_contender in msg:
             answer = next_contender
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         if remove in msg:
             answer = remove
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         if continue_searching in msg:
@@ -99,11 +110,13 @@ class Commander:
             answer = continue_searching
             self.path = os.path.join("interface", "keyboards", "search.json")
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         else:
             answer = "Команда не распознана!"
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
     def processing_mode_blacklist(self, msg):
@@ -114,11 +127,13 @@ class Commander:
         if next_contender in msg:
             answer = next_contender
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         if remove_blacklist in msg:
             answer = remove_blacklist
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         if continue_searching in msg:
@@ -126,11 +141,13 @@ class Commander:
             answer = continue_searching
             self.path = os.path.join("interface", "keyboards", "search.json")
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         else:
             answer = "Команда не распознана!"
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
     def processing_mode_search(self, msg):
@@ -148,16 +165,19 @@ class Commander:
             answer = next_contender
             result = [answer, self.path]
             self.result = result
+            self.saving_parameters()
             return result
 
         if favorites in msg:
             answer = favorites
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         if add_blacklist in msg:
             answer = add_blacklist
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         if favorites_list in msg:
@@ -165,6 +185,7 @@ class Commander:
             answer = favorites_list
             self.path = os.path.join("interface", "keyboards", "favorites.json")
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         if blacklist in msg:
@@ -172,6 +193,7 @@ class Commander:
             answer = blacklist
             self.path = os.path.join("interface", "keyboards", "blacklist.json")
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         if photo_1 in msg:
@@ -179,6 +201,7 @@ class Commander:
             answer = photo_1
             self.path = os.path.join("interface", "keyboards", "photo.json")
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         if photo_2 in msg:
@@ -186,6 +209,7 @@ class Commander:
             answer = photo_2
             self.path = os.path.join("interface", "keyboards", "photo.json")
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         if photo_3 in msg:
@@ -193,11 +217,13 @@ class Commander:
             answer = photo_3
             self.path = os.path.join("interface", "keyboards", "photo.json")
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         else:
             answer = "Команда не распознана!"
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
     def processing_mode_photo(self, msg):
@@ -209,11 +235,13 @@ class Commander:
         if like in msg:
             answer = like
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         if revoke_like in msg:
             answer = revoke_like
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         if continue_searching in msg:
@@ -221,32 +249,37 @@ class Commander:
             answer = continue_searching
             self.path = os.path.join("interface", "keyboards", "search.json")
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
         else:
             answer = "Команда не распознана!"
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
     def age_city_check(self):
         if self.bot_user.is_city_age_exists() == 0:
             self.mode = "search"
             self.path = os.path.join("interface", "keyboards", "search.json")
-            
+
             answer = "Все данные полученны"
             result = [answer, self.path]
+            self.saving_parameters()
             return result
         if self.bot_user.is_city_age_exists() == 1 or self.bot_user.is_city_age_exists() == 2:
             self.mode = "age"
             self.path = os.path.join("interface", "keyboards", "none.json")
             answer = f"{self.user_name}, пришлите Ваш возраст, в виде числа, в ответном сообщении."
             result = [answer, self.path]
+            self.saving_parameters()
             return result
         elif self.bot_user.is_city_age_exists() == 3:
             self.mode = "city"
             self.path = os.path.join("interface", "keyboards", "none.json")
             answer = f"{self.user_name}, укажите название города, в котором Вы проживаете, в ответном сообщении."
             result = [answer, self.path]
+            self.saving_parameters()
             return result
 
     def processing_mode_age(self, msg):
@@ -263,3 +296,28 @@ class Commander:
             city = re.search(pattern_city, msg).group(0)
             self.bot_user.give_me_city_age(city_name=city)
         return self.age_city_check()
+
+    def saving_parameters(self):
+        path_options = os.path.join("interface", "options")
+        if os.path.exists(path_options) is False:
+            os.mkdir(path_options)
+        path_file = os.path.join(path_options, f"options_{self.id}.txt")
+        dict_options = {
+            "self.token": self.token,
+            "self.mode": self.mode,
+            "self.last_ans": self.last_ans,
+            "self.result": self.result,
+            "self.path": self.path
+        }
+        with open(path_file, 'w', encoding='utf-8') as file:
+            json.dump(dict_options, file)
+
+    def reading_parameters(self):
+        path_file = os.path.join("interface", "options", f"options_{self.id}.txt")
+        with open(path_file, 'r', encoding='utf-8') as file:
+            dict_options = json.load(file)
+            self.token = dict_options["self.token"]
+            self.mode = dict_options["self.mode"]
+            self.last_ans = dict_options["self.last_ans"]
+            self.result = dict_options["self.result"]
+            self.path = dict_options["self.path"]
