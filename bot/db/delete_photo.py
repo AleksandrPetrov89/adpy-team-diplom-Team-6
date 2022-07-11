@@ -39,5 +39,5 @@ class DelPhoto:
         return after_del_list
 
 
-# if __name__ == '__main__':
-#     DelPhoto.del_id_photolist(DelPhoto('db_dating', 'user_dating'))
+if __name__ == '__main__':
+    DelPhoto.del_id_photolist(DelPhoto('db_dating', 'user_dating'))

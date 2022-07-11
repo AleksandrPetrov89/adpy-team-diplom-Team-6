@@ -92,7 +92,7 @@ class DataIn:
 
     # Функция заносит данные переданного пользователя в таблицу Избранных (elected_list),
     # пользователь вносится в поле user_data_user_id с проверкой дублирования.
-    def in_elected_table(self, user_bot=123456789, elected_user=987654321):
+    def in_elected_table(self, user_bot=123456780, elected_user=987654320):
         """
         Функция занесения пользователя в Избранные (таблица elected_list).
         ID выбранного пользователя помещается в поле user_data_user_id.
@@ -106,6 +106,15 @@ class DataIn:
         insert_result = True
         comment_result = f'Запись {elected_user} внесена в список Избранных!'
         for key, value in dict_electlist_user.items():
+            # Проверка наличия пользователей в таблице user_data.
+            req_check_user_bot = f'SELECT user_id FROM user_data WHERE user_id={key};'
+            is_exist_user_bot = connect.execute(req_check_user_bot).fetchall()
+            if is_exist_user_bot == []:
+                connect.execute(f'INSERT INTO user_data(user_id) VALUES({key});')
+            req_check_elect_user = f'SELECT user_id FROM user_data WHERE user_id={value};'
+            is_exist_elect_user = connect.execute(req_check_elect_user).fetchall()
+            if is_exist_elect_user == []:
+                connect.execute(f'INSERT INTO user_data(user_id) VALUES({value});')
             # Внесение данных о пользователях в таблицу Избранных.
             req_sql = f'INSERT INTO elected_list(user_data_user_id, bot_user_user_id) VALUES({value}, {key});'
             user_elect_exist = f'SELECT user_data_user_id, bot_user_user_id FROM elected_list' \
@@ -122,7 +131,7 @@ class DataIn:
 
     # Функция заносит данные переданного пользователя в Чёрный список (black_list).
     # Заблокированный пользователь вносится в поле user_data_user_id с проверкой дублирования.
-    def in_blacklist_table(self, user_bot=123456789, blacklist_user=987654321):
+    def in_blacklist_table(self, user_bot=623456781, blacklist_user=687654321):
         """
         Функция занесения пользователя в Чёрный список (таблица black_list).
         ID заблокированного пользователя помещается в поле user_data_user_id.
@@ -136,6 +145,15 @@ class DataIn:
         insert_result = True
         comment_result = f'Запись {blacklist_user} внесена в черный список!'
         for key, value in dict_blacklist_user.items():
+            # Проверка наличия пользователей в таблице user_data.
+            req_check_user_bot = f'SELECT user_id FROM user_data WHERE user_id={key};'
+            is_exist_user_bot = connect.execute(req_check_user_bot).fetchall()
+            if is_exist_user_bot == []:
+                connect.execute(f'INSERT INTO user_data(user_id) VALUES({key});')
+            req_check_bl_user = f'SELECT user_id FROM user_data WHERE user_id={value};'
+            is_exist_bl_user = connect.execute(req_check_bl_user).fetchall()
+            if is_exist_bl_user == []:
+                connect.execute(f'INSERT INTO user_data(user_id) VALUES({value});')
             # Внесение данных о пользователях в Черный список.
             req_sql = f'INSERT INTO black_list(user_data_user_id, bot_user_user_id) VALUES({value}, {key});'
             user_blacklist_exist = f'SELECT user_data_user_id, bot_user_user_id FROM black_list' \
@@ -153,5 +171,5 @@ class DataIn:
 
 if __name__ == '__main__':
     # DataIn.insert_user_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
-    # DataIn.in_blacklist_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
-    DataIn.in_elected_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
+    DataIn.in_blacklist_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
+    # DataIn.in_elected_table(DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating'))
