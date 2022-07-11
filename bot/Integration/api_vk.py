@@ -1,13 +1,15 @@
 import requests
 import os
 import json
-import re
 from datetime import datetime
 from datetime import date
+import time
+from pprint import pprint
 
-import db.send_data
-import db.insert_data
-import db.insert_photo
+
+import bot.db.send_data
+import bot.db.insert_data
+import bot.db.insert_photo
 
 
 class VKApiRequests:
@@ -17,13 +19,15 @@ class VKApiRequests:
         """Принимает id и токен пользователя, общающегося с ботом и либо собирает данные через API,
         либо подгружает и файла сохранённой сессии, при наличии
         """
-        self.db_insert_photo_object = db.insert_photo.Photo('db_dating', 'user_dating')
-        self.db_insert_data_object = db.insert_data.DataIn('Script_Insert_SQL_table_data.sql',
-                                                           'db_dating', 'user_dating')
-        self.db_send_data_object = db.send_data.Parcel('db_dating', 'user_dating')
+        self.db_insert_photo_object = bot.db.insert_photo.Photo('db_dating', 'user_dating')
+        self.db_insert_data_object = bot.db.insert_data.DataIn('Script_Insert_SQL_table_data.sql',
+                                                               'db_dating', 'user_dating')
+        self.db_send_data_object = bot.db.send_data.Parcel('db_dating', 'user_dating')
         self.user_token = vk_user_token
         self.user_id = vk_user_id
-        path_session = os.path.join("Integration", "Saved_sessions", f"Session_{self.user_id}.json")
+        self.requests_count = 0
+        self.timestart = time.time()
+        path_session = os.path.join("Saved_sessions", f"Session_{self.user_id}.json")
         if os.path.exists(path_session):
             with open(path_session, 'r', encoding='utf-8') as f:
                 self.user_info = json.load(f)
@@ -54,10 +58,9 @@ class VKApiRequests:
             'access_token': self.user_token,
             'v': '5.131'
         }
-        resp = requests.get(VKApiRequests.URL + method, params=params)
-        check_errors(resp, self.user_id, '_get_init_user_info')
-        giui_user_info = resp.json()
-        self.match_users = None
+        giui_user_info = requests.get(VKApiRequests.URL + method, params=params).json()
+        check_errors(giui_user_info, self.user_id, '_get_init_user_info')
+        self.match_users = {}
         self.first_name = giui_user_info['response'][0]['first_name']
         self.second_name = giui_user_info['response'][0]['last_name']
         self.sex = giui_user_info['response'][0]['sex']
@@ -142,9 +145,9 @@ class VKApiRequests:
             'access_token': self.user_token,
             'v': '5.131'
         }
-        resp = requests.get(VKApiRequests.URL + method, params=params)
+        resp = requests.get(VKApiRequests.URL + method, params=params).json()
         check_errors(resp, self.user_id, '_get_city_id')
-        result = resp.json()['response']['items']['id']
+        result = resp['response']['items']['id']
         return result
 
     def _get_user_groups(self, id_):
@@ -159,9 +162,12 @@ class VKApiRequests:
             'access_token': self.user_token,
             'v': '5.131'
         }
-        resp = requests.get(VKApiRequests.URL + method, params=params)
-        check_errors(resp, self.user_id, '_get_user_groups')
-        result = resp.json()['response']['items']
+        resp = requests.get(VKApiRequests.URL + method, params=params).json()
+        check_result = check_errors(resp, self.user_id, '_get_user_groups')
+        if check_result:
+            result = None
+        else:
+            result = resp['response']['items']
         return result
 
     def give_me_candidates(self):
@@ -207,14 +213,13 @@ class VKApiRequests:
             'offset': self.offset,
             'match_users': self.match_users,
         }
-        path_sessions = os.path.join("Integration", "Saved_sessions")
+        path_sessions = os.path.join("Saved_sessions")
         if os.path.exists(path_sessions) is False:
             os.mkdir(path_sessions)
         path_session = os.path.join(path_sessions, f"Session_{self.user_id}.json")
         with open(path_session, 'w', encoding='utf-8') as f:
             json.dump(dict_for_save, f)
 
-    # Собираем список подходящих кандидатов
     def _get_candidates(self):
         """Метод собирает перечень из 1000 пользователей из указанного города, сортирует их по совпдаению на
         возрастной диапазон, интересы, музыку, книги, группы, проверяет id кандидатов на предмет дубля выдачи
@@ -236,7 +241,7 @@ class VKApiRequests:
         method = 'users.search'
         params = {
             'offset': self.offset,
-            'count': 1000,
+            'count': 50,
             'status': 6,
             'fields': 'bdate, music, interests, books',
             'city': self.city_id,
@@ -246,26 +251,40 @@ class VKApiRequests:
             'access_token': self.user_token,
             'v': '5.131'
         }
-        resp = requests.get(VKApiRequests.URL + method, params=params)
-        check_errors(resp, self.user_id, '_get_candidates')
-        match_users_raw = resp.json()
+        match_users_raw = requests.get(VKApiRequests.URL + method, params=params).json()
+        check_errors(match_users_raw, self.user_id, '_get_candidates')
         for users in match_users_raw['response']['items']:
-            m_user_id = users.values()['id']
+            m_user_id = users['id']
             blacklist = self.db_send_data_object.black_list_output(self.user_id)
             if m_user_id in blacklist:
                 continue
-            m_first_name = users.values()['first_name']
-            m_last_name = users.values()['last_name']
-            if len(users.values()['bdate'].split('.')) == 3:
-                m_birth_year = users.values()['bdate'][-1:-4]
-                m_age = int(date.today().strftime('%Y')) - int(m_birth_year)
-            else:
+            m_first_name = users['first_name']
+            m_last_name = users['last_name']
+            m_age = 0
+            try:
+                if len(users['bdate'].split('.')) == 3:
+                    m_birth_year = users['bdate'][-4:]
+                    m_age = int(date.today().strftime('%Y')) - int(m_birth_year)
+            except KeyError:
                 continue
-            m_interests = users.values()['interests']
-            m_books = users.values()['books']
-            m_music = users.values()['music']
+            try:
+                m_interests = users['interests']
+            except KeyError:
+                m_interests = None
+            try:
+                m_books = users['books']
+            except KeyError:
+                m_books = None
+            try:
+                m_music = users['music']
+            except KeyError:
+                m_music = None
             m_groups = self._get_user_groups(m_user_id)
-            photo_inf = self._get_photo_links(users.values()['id'])
+            self.requests_limit_control()
+            photo_inf = self._get_photo_links(users['id'])
+            self.requests_limit_control()
+            if photo_inf is None:
+                continue
             m_photo_links = {}
             for item, value in photo_inf.items():
                 m_photo_links[item] = value['photo_link']
@@ -278,33 +297,35 @@ class VKApiRequests:
                 self.match_users[m_user_id] = match_users_dict
                 continue
             elif (self.age - 10 <= m_age <= self.age - 1 or self.age + 1 <= m_age <= self.age + 10) and m_age > 18:
-                cont_trigger = 0
                 if m_interests:
-                    for inter in m_interests:
-                        if re.match(inter, self.interests, flags=0):
-                            self.match_users[m_user_id] = match_users_dict
-                            cont_trigger = 1
-                    if cont_trigger:
+                    try:
+                        for inter in m_interests.split(','):
+                            if inter in self.interests.split(','):
+                                self.match_users[m_user_id] = match_users_dict
+                    except Exception:
                         continue
                 elif m_books:
-                    for book in m_books:
-                        if re.match(book, self.books, flags=0):
-                            self.match_users[m_user_id] = match_users_dict
-                            cont_trigger = 1
-                    if cont_trigger:
+                    try:
+                        for book in m_books.split(','):
+                            if book in self.books.split(','):
+                                self.match_users[m_user_id] = match_users_dict
+                    except Exception:
                         continue
                 elif m_music:
-                    for music in m_music:
-                        if re.match(music, self.music, flags=0):
-                            self.match_users[m_user_id] = match_users_dict
-                            cont_trigger = 1
-                    if cont_trigger:
+                    try:
+                        for music in m_music.split(','):
+                            if music in self.music.split(','):
+                                self.match_users[m_user_id] = match_users_dict
+                    except Exception:
                         continue
                 elif m_groups:
-                    for group in m_groups:
-                        if re.match(group, self.groups, flags=0):
-                            self.match_users[m_user_id] = match_users_dict
-        self.offset += 999
+                    try:
+                        for group in m_groups:
+                            if group in self.groups:
+                                self.match_users[m_user_id] = match_users_dict
+                    except Exception:
+                        continue
+        self.offset += 49
 
     def _get_photo_links(self, owner_id):
         """Внутренний метод получения ссылок на фотографии с самым большим кол-вом лайков
@@ -318,32 +339,22 @@ class VKApiRequests:
         }
         """
         method = 'photos.get'
-        params_profile = {
+        params = {
             'owner_id': owner_id,
             'album_id': 'profile',
             'extended': 1,
             'access_token': self.user_token,
             'v': '5.131'
         }
-        params_with = {
-            'owner_id': owner_id,
-            'album_id': -9000,
-            'extended': 1,
-            'access_token': self.user_token,
-            'v': '5.131'
-        }
-        resp_profile = requests.get(VKApiRequests.URL + method, params=params_profile)
-        check_errors(resp_profile, self.user_id, '_get_photo_links')
-        photo_info_profile = resp_profile.json()
-        resp_with = requests.get(VKApiRequests.URL + method, params=params_with)
-        check_errors(resp_with, self.user_id, '_get_photo_links')
-        photo_info_with = resp_with.json()
-        profile_dict = self._raw_photo_dict(photo_info_profile)
-        with_dict = self._raw_photo_dict(photo_info_with)
-        photo_dict = profile_dict | with_dict
-        for item, value in photo_dict.items():
-            self.db_insert_photo_object.get_photo(owner_id, value['photo_link'], item)
-        return photo_dict
+        photo_info = requests.get(VKApiRequests.URL + method, params=params).json()
+        check_result = check_errors(photo_info, self.user_id, '_get_photo_links')
+        if check_result:
+            return None
+        else:
+            photo_dict = self._raw_photo_dict(photo_info)
+            for item, value in photo_dict.items():
+                self.db_insert_photo_object.get_photo(owner_id, value['photo_link'], item)
+            return photo_dict
 
     def _raw_photo_dict(self, api_response):
         """Внутренняя функция сортировки изображений по кол-ву лайков и получение 3 топовых"""
@@ -383,7 +394,7 @@ class VKApiRequests:
             'access_token': self.user_token,
             'v': '5.131'
         }
-        resp = requests.post(VKApiRequests.URL + method, params=params)
+        resp = requests.post(VKApiRequests.URL + method, params=params).json()
         check_errors(resp, self.user_id, 'smash_like')
         result = 'Поставили лайк'
         return result
@@ -401,16 +412,31 @@ class VKApiRequests:
             'access_token': self.user_token,
             'v': '5.131'
         }
-        resp = requests.post(VKApiRequests.URL + method, params=params)
+        resp = requests.post(VKApiRequests.URL + method, params=params).json()
         check_errors(resp, self.user_id, 'delete_like')
         result = 'Удалили лайк'
         return result
 
+    def requests_limit_control(self):
+        """Метод контролирует лимит запросов к VK API в секунду"""
+        self.requests_count += 1
+        if self.requests_count > 4 and time.time() - self.timestart < 1:
+            time.sleep(0.7)
+            self.timestart = time.time()
+        elif self.requests_count > 4 and time.time() - self.timestart > 1:
+            self.timestart = time.time()
+
 
 def check_errors(response, user_id, func_name):
-    """Функция проверяет наличие ошибки в ответе на АПИ запрос, заносит ошибку в лог и выводит строку об ошибке"""
-    resp_error = str(response).split()[1]
-    path_errors = os.path.join("Integration", "Errors", "vk_errors.json")
+    """Функция проверяет наличие ошибки в ответе на АПИ запрос, заносит ошибку в лог и выводит строку об ошибке
+    Ответ от API находится в response.json()
+    """
+    try:
+        resp_error = str(response['error']['error_code'])
+    except Exception:
+        result = None
+        return result
+    path_errors = os.path.join("Errors", "vk_errors.json")
     with open(path_errors, 'r', encoding='utf-8') as f:
         errors = json.load(f)
         if resp_error in errors.keys():
@@ -418,6 +444,22 @@ def check_errors(response, user_id, func_name):
                 os.mkdir("Logs")
             path_logs = os.path.join("Logs", f"log_{user_id}.txt")
             with open(path_logs, 'a', encoding='utf-8') as file:
-                json.dump(f'{datetime.now()}\n{func_name}\nОшибка: {resp_error}\n{errors[resp_error]}\n-------\n', file)
+                file.write(f'{datetime.now().strftime("%d.%m.%Y - %H:%M")}\nИмя функции/метода: {func_name}\n'
+                           f'Ошибка: {resp_error}\n{errors[resp_error]}\n-------\n')
             result = 'Произошла непредвиденная ошибка! Пожалуйста, обратитесь к администратору или попробуйте позже.'
             return result
+
+
+if __name__ == '__main__':
+    id = 5325246
+    token = 'vk1.a.cGIhYvORtYWBin6V4Z4LDttSphiRM3e5arwtuWpL8nTzRLDEYzPj4AJtylUcv1AgfHp0PiGB_fD5c8k026vP2Sk6S-j4pYTdJlinHZIeRuUI4g0KpUAs5PGjDHDAn70m8hs7y__wkElMGnjny0aMAViKnPeheXFaWEJqCy_htKAYAKzUm03KhCUtz16YvevT'
+    t_1 = time.time()
+    test = VKApiRequests(id, token)
+    t_2 = time.time()
+    print((t_2 - t_1))
+    t_3 = time.time()
+    one = test.give_me_candidates()
+    t_4 = time.time()
+    print((t_4 - t_3))
+    print(len(one))
+    pprint(one)
