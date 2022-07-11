@@ -13,12 +13,15 @@ class Photo:
 
 
     # Функция получения фото в виде словаря.
-    def get_photo(self, user_id=123456789, photo_link='https://vk.com/id715243021?z=photo715243021_457239017%2Fphotos555666777', photo_id=457239018):
+    def get_photo(self, bot_user_user_id=123456789, user_id=987654321, photo_link='https://vk.com/id715243021?z=photo715243021_457239017%2Fphotos555666777', photo_id=111111111):
         """
+        Функция get_photo принимает на вход 4 параметра. bot_user_user_id - это id пользователя, который общается с
+        ботом и выбирает кандидатов. user_id - это id пользователя, которого выбрали, ссылка на фото и id фото которого
+        передаются в функцию, как 3-й и 4-й параметры.
         :return: dict_photo
         """
         dict_photo = {
-                    user_id : [photo_link, photo_id ]
+                    bot_user_user_id : [user_id, photo_link, photo_id ]
         }
         return dict_photo
 
@@ -32,14 +35,14 @@ class Photo:
         photo_obj = Photo(self.data_base, self.user)
         dict_photo = photo_obj.get_photo()
         for key, value in dict_photo.items():
-            link = value[0]
+            link = value[1]
             for symbol in link:
                 if symbol == '%':
                     new_symbol = symbol.replace('%', '%%')
                     new_photo_link += new_symbol
                 else:
                     new_photo_link += symbol
-            new_dict_photo[key] = [new_photo_link, value[1]]
+            new_dict_photo[key] = [value[0], new_photo_link, value[2]]
         return new_dict_photo
 
     # Функция заносит данные по фотографиям в таблицу photo_list.
@@ -53,43 +56,32 @@ class Photo:
         TableDb_obj = TableDb(self.data_base, self.user)
         connect = TableDb_obj.db_connect()
         for key, value in dict_photo.items():
-            req_sql = f"INSERT INTO photo_list(photo_link, photo_id, user_data_user_id) VALUES('{value[0]}'," \
-                      f" {value[1]}, {key});"
+            req_sql = f"INSERT INTO photo_list(photo_link, photo_id, user_data_user_id) VALUES('{value[1]}'," \
+                      f" {value[2]}, {value[0]});"
             insert_photo_result = connect.execute(req_sql)
         return insert_photo_result
-
-    # Функция получения фото c "лайком" в виде словаря. Пользователь user_id должен быть в базе!
-    def get_likes_photo(self, user_id=123456789, photo_id=457239018):
-        """
-        Функция получения фото c "лайком" в виде словаря. Пользователь user_id должен быть в базе.
-        :return: dict_likes_photo
-        """
-        dict_likes_photo = {
-                    user_id : photo_id
-        }
-        return dict_likes_photo
 
     # Функция заносит данные по "лайкнутым" фотографиям в таблицу likes_list.
     def in_likeslist_table(self):
         """
-        Функция внесения в БД данных о фотографиях, на которые поставили "лайк": ID фотографии, которая понравилась,
-         а также ID пользователя, который поставил лайк.
-        :return: insert_photo_result
+        Функция внесения в БД данных о фотографиях, на которые поставили "лайк": ID пользователя, который поставил лайк,
+        а также ID фотографии, которая понравилась.
+        :return: insert_likes_photo_result
         """
         id_list = []
         dict_obj = Photo(self.data_base, self.user)
-        dict_photo = dict_obj.get_likes_photo()
+        dict_photo = dict_obj.get_photo()
         TableDb_obj = TableDb(self.data_base, self.user)
         connect = TableDb_obj.db_connect()
         for key, value in dict_photo.items():
-            req_search_id = f'SELECT id FROM photo_list WHERE photo_id={value};'
+            req_search_id = f'SELECT id FROM photo_list WHERE photo_id={value[2]};'
             list_photo_list_id = connect.execute(req_search_id).fetchall()
             for item in list_photo_list_id:
                 for id_value in item:
                     id_list.append(id_value)
-                    req_sql = f"INSERT INTO likes_list(user_data_user_id, photo_list_id) VALUES({key}, {id_value});"
-                    insert_photo_result = connect.execute(req_sql)
-        return insert_photo_result
+                    req_sql = f"INSERT INTO likes_list(bot_user_user_id, photo_list_id) VALUES({key}, {id_value});"
+                    insert_likes_photo_result = connect.execute(req_sql)
+        return insert_likes_photo_result
 
 if __name__ == '__main__':
     # Photo.search_link_symbol(Photo('db_dating', 'user_dating'))

@@ -52,7 +52,7 @@ class TableDb:
                            'CONSTRAINT pk_bl PRIMARY KEY (user_data_user_id, bot_user_user_id)'],
             'photo_list' : ['id SERIAL PRIMARY KEY,', 'photo_link VARCHAR(120),', 'photo_id INTEGER,',
                        'user_data_user_id INTEGER NOT NULL REFERENCES user_data(user_id)'],
-            'likes_list' : ['id SERIAL PRIMARY KEY,', 'user_data_user_id INTEGER NOT '
+            'likes_list' : ['id SERIAL PRIMARY KEY,', 'bot_user_user_id INTEGER NOT '
                             'NULL REFERENCES user_data(user_id),', 'photo_list_id INTEGER NOT NULL '
                             'REFERENCES photo_list(id)']
         }
@@ -71,3 +71,6 @@ class TableDb:
             connect.execute(req)
             tables_list.append(tbl_name)
         return tables_list
+
+if __name__ == '__main__':
+    TableDb.create_tables(TableDb('db_dating', 'user_dating'))

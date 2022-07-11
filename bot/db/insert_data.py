@@ -14,8 +14,8 @@ class DataIn:
 
 
     # Функция получения данных в виде словаря.
-    def get_data(self, user_id=123456789, profile_link='https://vk.com/id123456789', age=16, first_name='Ivan',
-                 last_name='Ivanov', sex=2, city='Moscow',
+    def get_data(self, user_id=987654321, profile_link='https://vk.com/id123456789', age=16, first_name='Oleg',
+                 last_name='Petrov', sex=2, city='Moscow',
                  token='58eb4fa4a72b028c214dd5c8786d23a7054577f0b5a2530d5459936a9b8f8f58d1edc970fd82581e3e904',
                  groups=555666777, interests='спорт, рыбалка, кино, шахматы', music='рок, техно, джаз, "Битлз", '
                         '"Дорз"', books='"ghghgh", "ghghgfk tutri", "cbdjdj sletykym"'):
