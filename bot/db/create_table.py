@@ -1,5 +1,7 @@
 import sqlalchemy
-from create_user_db import DatingDb
+
+from db.create_user_db import DatingDb
+
 
 #
 class TableDb:
@@ -35,8 +37,8 @@ class TableDb:
         Функция create_tables создаёт нужное кол-во таблиц и в конце работы выводит их список.
         :return: tables_list
         """
-        TableDb_obj = TableDb(self.data_base, self.user)
-        connect = TableDb_obj.db_connect()
+        table_db_obj = TableDb(self.data_base, self.user)
+        connect = table_db_obj.db_connect()
         tables_list = []
         sql_table = 'CREATE TABLE IF NOT EXISTS'
         dict_tables = {

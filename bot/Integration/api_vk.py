@@ -4,9 +4,10 @@ import json
 import re
 from datetime import datetime
 from datetime import date
-import bot.db.send_data
-import bot.db.insert_data
-import bot.db.insert_photo
+
+import db.send_data
+import db.insert_data
+import db.insert_photo
 
 
 class VKApiRequests:
@@ -16,14 +17,15 @@ class VKApiRequests:
         """Принимает id и токен пользователя, общающегося с ботом и либо собирает данные через API,
         либо подгружает и файла сохранённой сессии, при наличии
         """
-        self.db_insert_photo_object = bot.db.insert_photo.Photo('db_dating', 'user_dating')
-        self.db_insert_data_object = bot.db.insert_data.DataIn('Script_Insert_SQL_table_data.sql',
-                                                               'db_dating', 'user_dating')
-        self.db_send_data_object = bot.db.send_data.Parcel('db_dating', 'user_dating')
+        self.db_insert_photo_object = db.insert_photo.Photo('db_dating', 'user_dating')
+        self.db_insert_data_object = db.insert_data.DataIn('Script_Insert_SQL_table_data.sql',
+                                                           'db_dating', 'user_dating')
+        self.db_send_data_object = db.send_data.Parcel('db_dating', 'user_dating')
         self.user_token = vk_user_token
         self.user_id = vk_user_id
-        if os.path.exists(f'Saved_sessions/Session_{self.user_id}.json'):
-            with open(f'Saved_sessions/Session_{self.user_id}.json', 'r', encoding='utf-8') as f:
+        path_session = os.path.join("Integration", "Saved_sessions", f"Session_{self.user_id}.json")
+        if os.path.exists(path_session):
+            with open(path_session, 'r', encoding='utf-8') as f:
                 self.user_info = json.load(f)
                 self.first_name = self.user_info['first_name']
                 self.second_name = self.user_info['second_name']
@@ -55,6 +57,7 @@ class VKApiRequests:
         resp = requests.get(VKApiRequests.URL + method, params=params)
         check_errors(resp, self.user_id, '_get_init_user_info')
         giui_user_info = resp.json()
+        self.match_users = None
         self.first_name = giui_user_info['response'][0]['first_name']
         self.second_name = giui_user_info['response'][0]['last_name']
         self.sex = giui_user_info['response'][0]['sex']
@@ -66,7 +69,8 @@ class VKApiRequests:
             self.age = int(date.today().strftime('%Y')) - int(birth_year)
         else:
             self.age = None
-        if giui_user_info['response'][0]['city']['title'] == '' or giui_user_info['response'][0]['city']['title'] is None:
+        if giui_user_info['response'][0]['city']['title'] == '' \
+                or giui_user_info['response'][0]['city']['title'] is None:
             self.city_name = None
         else:
             self.city_name = giui_user_info['response'][0]['city']['title']
@@ -203,7 +207,11 @@ class VKApiRequests:
             'offset': self.offset,
             'match_users': self.match_users,
         }
-        with open(f'Saved_sessions/Session_{self.user_id}.json', 'w', encoding='utf-8') as f:
+        path_sessions = os.path.join("Integration", "Saved_sessions")
+        if os.path.exists(path_sessions) is False:
+            os.mkdir(path_sessions)
+        path_session = os.path.join(path_sessions, f"Session_{self.user_id}.json")
+        with open(path_session, 'w', encoding='utf-8') as f:
             json.dump(dict_for_save, f)
 
     # Собираем список подходящих кандидатов
@@ -402,10 +410,14 @@ class VKApiRequests:
 def check_errors(response, user_id, func_name):
     """Функция проверяет наличие ошибки в ответе на АПИ запрос, заносит ошибку в лог и выводит строку об ошибке"""
     resp_error = str(response).split()[1]
-    with open('Errors/vk_errors.json', 'r', encoding='utf-8') as f:
+    path_errors = os.path.join("Integration", "Errors", "vk_errors.json")
+    with open(path_errors, 'r', encoding='utf-8') as f:
         errors = json.load(f)
         if resp_error in errors.keys():
-            with open(f'Logs/log_{user_id}.txt', 'a', encoding='utf-8') as file:
+            if os.path.exists("Logs") is False:
+                os.mkdir("Logs")
+            path_logs = os.path.join("Logs", f"log_{user_id}.txt")
+            with open(path_logs, 'a', encoding='utf-8') as file:
                 json.dump(f'{datetime.now()}\n{func_name}\nОшибка: {resp_error}\n{errors[resp_error]}\n-------\n', file)
             result = 'Произошла непредвиденная ошибка! Пожалуйста, обратитесь к администратору или попробуйте позже.'
             return result

@@ -1,31 +1,39 @@
 import sqlalchemy
+<<<<<<< HEAD
 from create_table import TableDb
 from sqlalchemy import exc
+=======
+import sqlalchemy.exc
+
+from db.create_table import TableDb
+
+>>>>>>> f36b5a3daa9e34d6277b8e655bc641e4d8185543
 
 #
 class DataIn:
     """
 
     """
+
     # Функция инициализации класса Data_In
     def __init__(self, filename, data_base, user):
         self.filename = filename
         self.data_base = data_base
         self.user = user
 
-
     # Функция получения данных в виде словаря.
     def get_data(self, user_id=987654321, profile_link='https://vk.com/id123456789', age=16, first_name='Oleg',
                  last_name='Petrov', sex=2, city='Moscow',
                  token='58eb4fa4a72b028c214dd5c8786d23a7054577f0b5a2530d5459936a9b8f8f58d1edc970fd82581e3e904',
                  groups=555666777, interests='спорт, рыбалка, кино, шахматы', music='рок, техно, джаз, "Битлз", '
-                        '"Дорз"', books='"ghghgh", "ghghgfk tutri", "cbdjdj sletykym"'):
+                                                                                    '"Дорз"',
+                 books='"ghghgh", "ghghgfk tutri", "cbdjdj sletykym"'):
         """
 
         """
         dict_user = {
-                    user_id : [profile_link, age, first_name, last_name, sex, city, token, groups, interests,
-                               music, books]
+            user_id: [profile_link, age, first_name, last_name, sex, city, token, groups, interests,
+                      music, books]
         }
         return dict_user
 
@@ -73,8 +81,8 @@ class DataIn:
         и исполнять любое количество SQL-запросов.
         :return: insert_result, comment_result
         """
-        TableDb_obj = TableDb(self.data_base, self.user)
-        connect = TableDb_obj.db_connect()
+        table_db_obj = TableDb(self.data_base, self.user)
+        connect = table_db_obj.db_connect()
 
         insert_user_obj = DataIn(self.filename, self.data_base, self.user)
         insert_user_obj.write_file()
@@ -99,16 +107,22 @@ class DataIn:
         возвращается соответствующая информация.
         :return: insert_result, comment_result
         """
+<<<<<<< HEAD
         dict_electlist_user = {user_bot : elected_user}
         TableDb_obj = TableDb(self.data_base, self.user)
         connect = TableDb_obj.db_connect()
+=======
+        dict_blacklist_user = {user_bot: elected_user}
+        table_db_obj = TableDb(self.data_base, self.user)
+        connect = table_db_obj.db_connect()
+>>>>>>> f36b5a3daa9e34d6277b8e655bc641e4d8185543
         insert_result = True
         comment_result = f'Запись {elected_user} внесена в список Избранных!'
         for key, value in dict_electlist_user.items():
             # Внесение данных о пользователях в таблицу Избранных.
             req_sql = f'INSERT INTO elected_list(user_data_user_id, bot_user_user_id) VALUES({value}, {key});'
             user_elect_exist = f'SELECT user_data_user_id, bot_user_user_id FROM elected_list' \
-                                   f' WHERE user_data_user_id={elected_user} AND bot_user_user_id={user_bot};'
+                               f' WHERE user_data_user_id={elected_user} AND bot_user_user_id={user_bot};'
             is_exist = connect.execute(user_elect_exist).fetchall()
             # Проверка внесения данных о пользователях в таблицу Избранных.
             if is_exist != []:
@@ -129,9 +143,9 @@ class DataIn:
         возвращается соответствующая информация.
         :return: insert_result, comment_result
         """
-        dict_blacklist_user = {user_bot : blacklist_user}
-        TableDb_obj = TableDb(self.data_base, self.user)
-        connect = TableDb_obj.db_connect()
+        dict_blacklist_user = {user_bot: blacklist_user}
+        table_db_obj = TableDb(self.data_base, self.user)
+        connect = table_db_obj.db_connect()
         insert_result = True
         comment_result = f'Запись {blacklist_user} внесена в черный список!'
         for key, value in dict_blacklist_user.items():
@@ -146,8 +160,6 @@ class DataIn:
             else:
                 connect.execute(req_sql)
         return insert_result, comment_result
-
-
 
 
 if __name__ == '__main__':
