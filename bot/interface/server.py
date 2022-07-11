@@ -53,7 +53,7 @@ class Server:
                 # Пришло новое сообщение
                 if event.type == VkBotEventType.MESSAGE_NEW:
                     result = self.users[event.message.from_id].input(event.message.text)
-                    self.send_msg(event.message.peer_id, result[0], result[1])
+                    self.send_msg(event.message.from_id, result[0], result[1])
 
     def get_user_name(self, user_id):
         """ Получаем имя пользователя"""

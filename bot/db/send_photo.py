@@ -1,4 +1,5 @@
-from create_table import TableDb
+from db.create_table import TableDb
+
 
 #
 class PhotoTransfer:
@@ -23,8 +24,8 @@ class PhotoTransfer:
         """
         photo_list = []
         result_lp_output_list = []
-        TableDb_obj = TableDb(self.data_base, self.user)
-        connect = TableDb_obj.db_connect()
+        table_db_obj = TableDb(self.data_base, self.user)
+        connect = table_db_obj.db_connect()
         req_output = f'SELECT pl.photo_link, pl.photo_id, ll.user_data_user_id FROM photo_list pl ' \
                      f'JOIN likes_list ll ON ll.photo_list_id = pl.id JOIN user_data ud ON ' \
                      f'll.user_data_user_id = ud.user_id WHERE ll.user_data_user_id = {user_id};'
@@ -44,7 +45,6 @@ class PhotoTransfer:
             if new_item[2].isdigit():
                 new_item[2] = int(new_item[2])
         return result_lp_output_list
-
 
 
 if __name__ == '__main__':

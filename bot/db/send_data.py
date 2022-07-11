@@ -1,4 +1,5 @@
-from create_table import TableDb
+from db.create_table import TableDb
+
 
 #
 class Parcel:

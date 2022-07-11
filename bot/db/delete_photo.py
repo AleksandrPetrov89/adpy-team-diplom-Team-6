@@ -1,4 +1,5 @@
-from create_table import TableDb
+from db.create_table import TableDb
+
 
 #
 class DelPhoto:
@@ -20,8 +21,8 @@ class DelPhoto:
         """
         after_del_list = []
         clean_id_list = []
-        TableDb_obj = TableDb(self.data_base, self.user)
-        connect = TableDb_obj.db_connect()
+        table_db_obj = TableDb(self.data_base, self.user)
+        connect = table_db_obj.db_connect()
         req_search_id = f'SELECT id FROM photo_list WHERE photo_id={del_photo_id} AND user_data_user_id={user_id};'
         list_photo_list_id = connect.execute(req_search_id).fetchall()
         for item_list in list_photo_list_id:
@@ -38,5 +39,5 @@ class DelPhoto:
         return after_del_list
 
 
-if __name__ == '__main__':
-    DelPhoto.del_id_photolist(DelPhoto('db_dating', 'user_dating'))
+# if __name__ == '__main__':
+#     DelPhoto.del_id_photolist(DelPhoto('db_dating', 'user_dating'))
