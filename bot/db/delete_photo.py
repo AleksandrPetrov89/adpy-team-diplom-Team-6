@@ -1,4 +1,5 @@
 from db.create_table import TableDb
+from db.delete_data import Disposal
 
 
 #
@@ -36,6 +37,10 @@ class DelPhoto:
         connect.execute(req_del_id_pl)
         req_search_id = f'SELECT id FROM photo_list WHERE photo_id={del_photo_id} AND user_data_user_id={user_id};'
         after_del_list = connect.execute(req_search_id).fetchall()
+        # Проверка и удаление пустых записей из основной таблицы базы данных user_data.
+        del_user_obj = Disposal(self.data_base, self.user)
+        del_user_obj.del_null_user(user_id)
+        del_user_obj.del_null_user(bot_user_id)
         return after_del_list
 
 

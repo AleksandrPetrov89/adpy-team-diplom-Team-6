@@ -26,9 +26,9 @@ class PhotoTransfer:
         result_lp_output_list = []
         table_db_obj = TableDb(self.data_base, self.user)
         connect = table_db_obj.db_connect()
-        req_output = f'SELECT pl.photo_link, pl.photo_id, ll.user_data_user_id FROM photo_list pl ' \
+        req_output = f'SELECT pl.photo_link, pl.photo_id, ll.bot_user_user_id FROM photo_list pl ' \
                      f'JOIN likes_list ll ON ll.photo_list_id = pl.id JOIN user_data ud ON ' \
-                     f'll.user_data_user_id = ud.user_id WHERE ll.user_data_user_id = {user_id};'
+                     f'll.bot_user_user_id = ud.user_id WHERE ll.bot_user_user_id = {user_id};'
         output_list = connect.execute(req_output).fetchall()
         for item_list in output_list:
             clean_id = ''

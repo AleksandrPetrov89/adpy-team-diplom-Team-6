@@ -13,7 +13,7 @@ class Photo:
         self.user = user
 
     # Функция получения фото в виде словаря.
-    def get_photo(self, bot_user_user_id=123456789, user_id=987654321,
+    def get_photo(self, bot_user_user_id=123456789, user_id=222222222,
                   photo_link='https://vk.com/id715243021?z=photo715243021_457239017%2Fphotos555666777',
                   photo_id=111111111):
         """
@@ -61,6 +61,16 @@ class Photo:
         connect = table_db_obj.db_connect()
         insert_status = True
         for key, value in dict_photo.items():
+            # Проверка наличия пользователей в таблице user_data.
+            req_check_user_bot = f'SELECT user_id FROM user_data WHERE user_id={key};'
+            is_exist_user_bot = connect.execute(req_check_user_bot).fetchall()
+            if is_exist_user_bot == []:
+                connect.execute(f'INSERT INTO user_data(user_id) VALUES({key});')
+            req_check_elect_user = f'SELECT user_id FROM user_data WHERE user_id={value[0]};'
+            is_exist_elect_user = connect.execute(req_check_elect_user).fetchall()
+            if is_exist_elect_user == []:
+                connect.execute(f'INSERT INTO user_data(user_id) VALUES({value[0]});')
+            # Внесение данных о пользователях в таблицу photo_list.
             req_sql = f"INSERT INTO photo_list(photo_link, photo_id, user_data_user_id) VALUES('{value[1]}'," \
                       f" {value[2]}, {value[0]});"
             req_check_sql = f'SELECT user_data_user_id, photo_id FROM photo_list' \
@@ -98,5 +108,5 @@ class Photo:
 
 if __name__ == '__main__':
     # Photo.search_link_symbol(Photo('db_dating', 'user_dating'))
-    # Photo.in_photolist_table(Photo('db_dating', 'user_dating'))
+    Photo.in_photolist_table(Photo('db_dating', 'user_dating'))
     Photo.in_likeslist_table(Photo('db_dating', 'user_dating'))
