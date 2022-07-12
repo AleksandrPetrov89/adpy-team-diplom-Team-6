@@ -1,4 +1,4 @@
-from create_table import TableDb
+from db.create_table import TableDb
 
 
 #
@@ -21,8 +21,8 @@ class Parcel:
         :return: result_bl_output_list
         """
         result_bl_output_list = []
-        TableDb_obj = TableDb(self.data_base, self.user)
-        connect = TableDb_obj.db_connect()
+        table_db_obj = TableDb(self.data_base, self.user)
+        connect = table_db_obj.db_connect()
         req_output = f'SELECT user_data_user_id FROM black_list WHERE bot_user_user_id={user_id};'
         output_list = connect.execute(req_output).fetchall()
         for item_list in output_list:
@@ -44,8 +44,8 @@ class Parcel:
         :return: result_el_output_list
         """
         result_el_output_list = []
-        TableDb_obj = TableDb(self.data_base, self.user)
-        connect = TableDb_obj.db_connect()
+        table_db_obj = TableDb(self.data_base, self.user)
+        connect = table_db_obj.db_connect()
         req_output = f'SELECT user_data_user_id FROM elected_list WHERE bot_user_user_id={user_id};'
         output_list = connect.execute(req_output).fetchall()
         for item_list in output_list:
@@ -58,6 +58,6 @@ class Parcel:
         return result_el_output_list
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # Parcel.black_list_output(Parcel('db_dating', 'user_dating'))
-    Parcel.elected_list_output(Parcel('db_dating', 'user_dating'))
+    # Parcel.elected_list_output(Parcel('db_dating', 'user_dating'))

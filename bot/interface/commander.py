@@ -21,9 +21,8 @@ class Commander:
             self.token = None
             self.bot_user = None
             self.mode = "default"
-            self.last_ans = None
-            self.result = None
             self.path = os.path.join("interface", "keyboards", "default.json")
+            self.candidate = {}
 
     def input(self, msg):
         """
@@ -66,7 +65,7 @@ class Commander:
             return self.age_city_check()
         else:
             answer = f"Ошибка! Попробуйте еще раз!\n\n" + request_token
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
@@ -77,13 +76,13 @@ class Commander:
             self.mode = "token"
             answer = request_token
             self.path = os.path.join("interface", "keyboards", "none.json")
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
         else:
             answer = f"Привет, {self.user_name}!\n" \
                      f"Для того чтобы начать поиск партнера нажмите 'Начать поиск'. Удачи, {self.user_name}!"
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
@@ -95,13 +94,13 @@ class Commander:
 
         if next_contender in msg:
             answer = next_contender
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
         if remove in msg:
             answer = remove
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
@@ -109,13 +108,13 @@ class Commander:
             self.mode = "search"
             answer = continue_searching
             self.path = os.path.join("interface", "keyboards", "search.json")
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
         else:
             answer = "Команда не распознана!"
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
@@ -126,13 +125,13 @@ class Commander:
 
         if next_contender in msg:
             answer = next_contender
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
         if remove_blacklist in msg:
             answer = remove_blacklist
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
@@ -140,13 +139,13 @@ class Commander:
             self.mode = "search"
             answer = continue_searching
             self.path = os.path.join("interface", "keyboards", "search.json")
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
         else:
             answer = "Команда не распознана!"
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
@@ -162,21 +161,21 @@ class Commander:
         photo_3 = commander_config.photo_3
 
         if next_contender in msg:
-            answer = next_contender
-            result = [answer, self.path]
-            self.result = result
+            self.obtaining_candidate()
+            answer = self.candidate_data_output()
+            result = {"message": answer["message"], "path": self.path, "attachment": answer["attachment"]}
             self.saving_parameters()
             return result
 
         if favorites in msg:
             answer = favorites
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
         if add_blacklist in msg:
             answer = add_blacklist
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
@@ -184,7 +183,7 @@ class Commander:
             self.mode = "favorites"
             answer = favorites_list
             self.path = os.path.join("interface", "keyboards", "favorites.json")
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
@@ -192,7 +191,7 @@ class Commander:
             self.mode = "blacklist"
             answer = blacklist
             self.path = os.path.join("interface", "keyboards", "blacklist.json")
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
@@ -200,7 +199,7 @@ class Commander:
             self.mode = "photo"
             answer = photo_1
             self.path = os.path.join("interface", "keyboards", "photo.json")
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
@@ -208,7 +207,7 @@ class Commander:
             self.mode = "photo"
             answer = photo_2
             self.path = os.path.join("interface", "keyboards", "photo.json")
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
@@ -216,13 +215,13 @@ class Commander:
             self.mode = "photo"
             answer = photo_3
             self.path = os.path.join("interface", "keyboards", "photo.json")
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
         else:
             answer = "Команда не распознана!"
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
@@ -234,13 +233,13 @@ class Commander:
 
         if like in msg:
             answer = like
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
         if revoke_like in msg:
             answer = revoke_like
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
@@ -248,13 +247,13 @@ class Commander:
             self.mode = "search"
             answer = continue_searching
             self.path = os.path.join("interface", "keyboards", "search.json")
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
         else:
             answer = "Команда не распознана!"
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
@@ -262,23 +261,23 @@ class Commander:
         if self.bot_user.is_city_age_exists() == 0:
             self.mode = "search"
             self.path = os.path.join("interface", "keyboards", "search.json")
-
-            answer = "Все данные полученны"
-            result = [answer, self.path]
+            self.obtaining_candidate()
+            answer = self.candidate_data_output()
+            result = {"message": answer["message"], "path": self.path, "attachment": answer["attachment"]}
             self.saving_parameters()
             return result
         if self.bot_user.is_city_age_exists() == 1 or self.bot_user.is_city_age_exists() == 2:
             self.mode = "age"
             self.path = os.path.join("interface", "keyboards", "none.json")
             answer = f"{self.user_name}, пришлите Ваш возраст, в виде числа, в ответном сообщении."
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
         elif self.bot_user.is_city_age_exists() == 3:
             self.mode = "city"
             self.path = os.path.join("interface", "keyboards", "none.json")
             answer = f"{self.user_name}, укажите название города, в котором Вы проживаете, в ответном сообщении."
-            result = [answer, self.path]
+            result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
@@ -305,9 +304,8 @@ class Commander:
         dict_options = {
             "self.token": self.token,
             "self.mode": self.mode,
-            "self.last_ans": self.last_ans,
-            "self.result": self.result,
-            "self.path": self.path
+            "self.path": self.path,
+            "self.candidate": self.candidate
         }
         with open(path_file, 'w', encoding='utf-8') as file:
             json.dump(dict_options, file)
@@ -318,6 +316,34 @@ class Commander:
             dict_options = json.load(file)
             self.token = dict_options["self.token"]
             self.mode = dict_options["self.mode"]
-            self.last_ans = dict_options["self.last_ans"]
-            self.result = dict_options["self.result"]
             self.path = dict_options["self.path"]
+            self.candidate = dict_options["self.candidate"]
+
+    def obtaining_candidate(self):
+        dict_candidates = self.bot_user.give_me_candidates()
+        dict_candidate = {
+            "id": list(dict_candidates.keys())[0],
+            "first_name": dict_candidates[list(dict_candidates.keys())[0]]["first_name"],
+            "last_name": dict_candidates[list(dict_candidates.keys())[0]]["last_name"],
+            "link_to_profile": f"https://vk.com/id{list(dict_candidates.keys())[0]}",
+            "photo_1": {"id_photo": list(dict_candidates[list(dict_candidates.keys())[0]]["photo_links"].keys())[0],
+                        "link_photo": dict_candidates[list(dict_candidates.keys())[0]]["photo_links"]
+                        [list(dict_candidates[list(dict_candidates.keys())[0]]["photo_links"].keys())[0]]},
+            "photo_2": {"id_photo": list(dict_candidates[list(dict_candidates.keys())[0]]["photo_links"].keys())[1],
+                        "link_photo": dict_candidates[list(dict_candidates.keys())[0]]["photo_links"]
+                        [list(dict_candidates[list(dict_candidates.keys())[0]]["photo_links"].keys())[1]]},
+            "photo_3": {"id_photo": list(dict_candidates[list(dict_candidates.keys())[0]]["photo_links"].keys())[2],
+                        "link_photo": dict_candidates[list(dict_candidates.keys())[0]]["photo_links"]
+                        [list(dict_candidates[list(dict_candidates.keys())[0]]["photo_links"].keys())[2]]}
+        }
+        self.candidate = dict_candidate
+        self.bot_user.save_session(self.candidate["id"])
+
+    def candidate_data_output(self):
+        message = f"{self.candidate['first_name']} {self.candidate['last_name']}\n{self.candidate['link_to_profile']}"
+        owner_id = self.candidate['id']
+        photo_id_1 = self.candidate['photo_1']['id_photo']
+        photo_id_2 = self.candidate['photo_2']['id_photo']
+        photo_id_3 = self.candidate['photo_3']['id_photo']
+        attachment = f"photo{owner_id}_{photo_id_1},photo{owner_id}_{photo_id_2},photo{owner_id}_{photo_id_3}"
+        return {"message": message, "attachment": attachment}

@@ -1,4 +1,4 @@
-from create_table import TableDb
+from db.create_table import TableDb
 
 
 #
@@ -6,13 +6,16 @@ class Photo:
     """
 
     """
+
     # Функция инициализации класса Photo
     def __init__(self, data_base, user):
         self.data_base = data_base
         self.user = user
 
     # Функция получения фото в виде словаря.
-    def get_photo(self, bot_user_user_id=123456789, user_id=987654321, photo_link='https://vk.com/id715243021?z=photo715243021_457239017%2Fphotos555666777', photo_id=111111111):
+    def get_photo(self, bot_user_user_id=123456789, user_id=987654321,
+                  photo_link='https://vk.com/id715243021?z=photo715243021_457239017%2Fphotos555666777',
+                  photo_id=111111111):
         """
         Функция get_photo принимает на вход 4 параметра. bot_user_user_id - это id пользователя, который общается с
         ботом и выбирает кандидатов. user_id - это id пользователя, которого выбрали, ссылка на фото и id фото которого
@@ -20,7 +23,7 @@ class Photo:
         :return: dict_photo
         """
         dict_photo = {
-                    bot_user_user_id : [user_id, photo_link, photo_id ]
+            bot_user_user_id: [user_id, photo_link, photo_id]
         }
         return dict_photo
 
@@ -61,7 +64,7 @@ class Photo:
             req_sql = f"INSERT INTO photo_list(photo_link, photo_id, user_data_user_id) VALUES('{value[1]}'," \
                       f" {value[2]}, {value[0]});"
             req_check_sql = f'SELECT user_data_user_id, photo_id FROM photo_list' \
-                               f' WHERE user_data_user_id={value[0]} AND photo_id={value[2]};'
+                            f' WHERE user_data_user_id={value[0]} AND photo_id={value[2]};'
             is_exist = connect.execute(req_check_sql).fetchall()
             if is_exist != []:
                 insert_status = False
@@ -79,8 +82,8 @@ class Photo:
         id_list = []
         dict_obj = Photo(self.data_base, self.user)
         dict_photo = dict_obj.get_photo()
-        TableDb_obj = TableDb(self.data_base, self.user)
-        connect = TableDb_obj.db_connect()
+        table_db_obj = TableDb(self.data_base, self.user)
+        connect = table_db_obj.db_connect()
         insert_status = True
         for key, value in dict_photo.items():
             req_search_id = f'SELECT id FROM photo_list WHERE photo_id={value[2]};'
@@ -91,6 +94,7 @@ class Photo:
                     req_sql = f"INSERT INTO likes_list(bot_user_user_id, photo_list_id) VALUES({key}, {id_value});"
                     connect.execute(req_sql)
         return insert_status
+
 
 if __name__ == '__main__':
     # Photo.search_link_symbol(Photo('db_dating', 'user_dating'))

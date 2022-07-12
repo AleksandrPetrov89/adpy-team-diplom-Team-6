@@ -1,6 +1,8 @@
 import sqlalchemy
 from sqlalchemy import exc
-from create_table import TableDb
+
+from db.create_table import TableDb
+
 
 #
 class DataIn:
@@ -100,9 +102,9 @@ class DataIn:
         возвращается соответствующая информация.
         :return: insert_result, comment_result
         """
-        dict_electlist_user = {user_bot : elected_user}
-        TableDb_obj = TableDb(self.data_base, self.user)
-        connect = TableDb_obj.db_connect()
+        dict_electlist_user = {user_bot: elected_user}
+        table_db_obj = TableDb(self.data_base, self.user)
+        connect = table_db_obj.db_connect()
         insert_result = True
         comment_result = f'Запись {elected_user} внесена в список Избранных!'
         for key, value in dict_electlist_user.items():

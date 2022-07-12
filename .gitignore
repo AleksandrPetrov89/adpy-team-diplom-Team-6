@@ -2,7 +2,5 @@
 tmp/
 tmp.log
 token*.txt
-__pycache__
-/db/__pycache__
 /db/sqlpsw.txt
 /options/

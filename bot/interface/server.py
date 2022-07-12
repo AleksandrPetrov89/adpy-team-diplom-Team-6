@@ -28,19 +28,20 @@ class Server:
         # Словарь для каждого отдельного пользователя
         self.users = {}
 
-    def send_msg(self, send_id, message, path):
+    def send_msg(self, send_id, message, path, attach=None):
         """
         Отправка сообщения через метод messages.send
         :param path: путь к файлу с кнопками
         :param send_id: vk id пользователя, который получит сообщение
         :param message: содержимое отправляемого письма
+        :param attach: медиавложения к личному сообщению, перечисленные через запятую.
         :return: None
         """
-        # print(os.getcwd())
         return self.vk_api.messages.send(peer_id=send_id,
                                          message=message,
                                          random_id=random.randint(0, 2048),
-                                         keyboard=open(path, "r", encoding="UTF-8").read())
+                                         keyboard=open(path, "r", encoding="UTF-8").read(),
+                                         attachment=attach)
 
     def start(self):
         for event in self.long_poll.listen():  # Слушаем сервер
@@ -53,7 +54,7 @@ class Server:
                 # Пришло новое сообщение
                 if event.type == VkBotEventType.MESSAGE_NEW:
                     result = self.users[event.message.from_id].input(event.message.text)
-                    self.send_msg(event.message.from_id, result[0], result[1])
+                    self.send_msg(event.message.from_id, result["message"], result["path"], result["attachment"])
 
     def get_user_name(self, user_id):
         """ Получаем имя пользователя"""

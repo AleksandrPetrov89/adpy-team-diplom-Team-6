@@ -6,10 +6,9 @@ from datetime import date
 import time
 from pprint import pprint
 
-
-import bot.db.send_data
-import bot.db.insert_data
-import bot.db.insert_photo
+import db.send_data
+import db.insert_data
+import db.insert_photo
 
 
 class VKApiRequests:
@@ -19,10 +18,10 @@ class VKApiRequests:
         """Принимает id и токен пользователя, общающегося с ботом и либо собирает данные через API,
         либо подгружает и файла сохранённой сессии, при наличии
         """
-        self.db_insert_photo_object = bot.db.insert_photo.Photo('db_dating', 'user_dating')
-        self.db_insert_data_object = bot.db.insert_data.DataIn('Script_Insert_SQL_table_data.sql',
-                                                               'db_dating', 'user_dating')
-        self.db_send_data_object = bot.db.send_data.Parcel('db_dating', 'user_dating')
+        self.db_insert_photo_object = db.insert_photo.Photo('db_dating', 'user_dating')
+        self.db_insert_data_object = db.insert_data.DataIn('Script_Insert_SQL_table_data.sql',
+                                                           'db_dating', 'user_dating')
+        self.db_send_data_object = db.send_data.Parcel('db_dating', 'user_dating')
         self.user_token = vk_user_token
         self.user_id = vk_user_id
         self.requests_count = 0
@@ -213,7 +212,7 @@ class VKApiRequests:
             'offset': self.offset,
             'match_users': self.match_users,
         }
-        path_sessions = os.path.join("Saved_sessions")
+        path_sessions = os.path.join("Integration", "Saved_sessions")
         if os.path.exists(path_sessions) is False:
             os.mkdir(path_sessions)
         path_session = os.path.join(path_sessions, f"Session_{self.user_id}.json")
@@ -436,7 +435,7 @@ def check_errors(response, user_id, func_name):
     except Exception:
         result = None
         return result
-    path_errors = os.path.join("Errors", "vk_errors.json")
+    path_errors = os.path.join("Integration", "Errors", "vk_errors.json")
     with open(path_errors, 'r', encoding='utf-8') as f:
         errors = json.load(f)
         if resp_error in errors.keys():
