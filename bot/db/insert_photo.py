@@ -94,5 +94,5 @@ class Photo:
 
 if __name__ == '__main__':
     # Photo.search_link_symbol(Photo('db_dating', 'user_dating'))
-    # Photo.in_photolist_table(Photo('db_dating', 'user_dating'))
+    Photo.in_photolist_table(Photo('db_dating', 'user_dating'))
     Photo.in_likeslist_table(Photo('db_dating', 'user_dating'))
