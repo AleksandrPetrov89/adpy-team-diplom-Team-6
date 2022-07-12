@@ -1,4 +1,4 @@
-from db.create_table import TableDb
+from create_table import TableDb
 
 
 #
