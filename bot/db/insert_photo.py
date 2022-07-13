@@ -13,7 +13,7 @@ class Photo:
         self.user = user
 
     # Функция получения фото в виде словаря.
-    def get_photo(self, bot_user_user_id=123456789, user_id=222222222,
+    def get_photo(self, bot_user_user_id=666666666, user_id=444444444,
                   photo_link='https://vk.com/id715243021?z=photo715243021_457239017%2Fphotos555666777',
                   photo_id=111111111):
         """
@@ -90,6 +90,7 @@ class Photo:
         :return: insert_status
         """
         id_list = []
+        check_insert_list = []
         dict_obj = Photo(self.data_base, self.user)
         dict_photo = dict_obj.get_photo()
         table_db_obj = TableDb(self.data_base, self.user)
@@ -103,6 +104,13 @@ class Photo:
                     id_list.append(id_value)
                     req_sql = f"INSERT INTO likes_list(bot_user_user_id, photo_list_id) VALUES({key}, {id_value});"
                     connect.execute(req_sql)
+                    # Проверка внесения данных о лайкнутых фото в таблицу likes_list базы данных.
+                    req_check_ll_insert = f'SELECT bot_user_user_id FROM likes_list WHERE ' \
+                                          f'bot_user_user_id={key} AND photo_list_id={id_value};'
+                    list_check_ll_insert = connect.execute(req_check_ll_insert).fetchall()
+                    check_insert_list.append(list_check_ll_insert)
+        if check_insert_list == []:
+            insert_status = False
         return insert_status
 
 

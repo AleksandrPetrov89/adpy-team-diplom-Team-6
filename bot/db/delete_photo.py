@@ -13,7 +13,7 @@ class DelPhoto:
         self. user = user
 
     # Функция удаления лайкнутых фото из двух списков: photo_list, likes_list.
-    def del_id_photolist(self, bot_user_id=123456789, user_id=987654321, del_photo_id=111111111):
+    def del_id_photolist(self, bot_user_id=666666666, user_id=999999999, del_photo_id=111111111):
         """
         Функция del_id_photolist принимает на вход три параметра: id пользователя бота, id пользователя,
         фотографию которого нужно удалить и id самой фотографии.
