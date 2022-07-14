@@ -8,9 +8,13 @@ class Photo:
     """
 
     # Функция инициализации класса Photo
-    def __init__(self, data_base, user):
+    def __init__(self, data_base, user, bot_user_user_id, user_id, photo_link, photo_id):
         self.data_base = data_base
         self.user = user
+        self.bot_user_user_id = bot_user_user_id
+        self.user_id = user_id
+        self.photo_link = photo_link
+        self.photo_id = photo_id
 
     # Функция поиска спецсимвола % в ссылках и замена на %%, в противном случае данные не записываются в таблицы БД.
     def search_link_symbol(self, bot_user_user_id, user_id, photo_link, photo_id):
@@ -44,7 +48,7 @@ class Photo:
         :return: insert_status
         """
         dict_obj = Photo(self.data_base, self.user)
-        dict_photo = dict_obj.search_link_symbol()
+        dict_photo = dict_obj.search_link_symbol(self.bot_user_user_id, self.user_id, self.photo_link, self.photo_id)
         table_db_obj = TableDb(self.data_base, self.user)
         connect = table_db_obj.db_connect()
         insert_status = True
