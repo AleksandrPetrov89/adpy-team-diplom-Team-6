@@ -26,7 +26,7 @@ class VKApiRequests:
         self.user_id = vk_user_id
         self.requests_count = 0
         self.timestart = time.time()
-        path_session = os.path.join("Saved_sessions", f"Session_{self.user_id}.json")
+        path_session = os.path.join("Integration", "Saved_sessions", f"Session_{self.user_id}.json")
         if os.path.exists(path_session):
             with open(path_session, 'r', encoding='utf-8') as f:
                 self.user_info = json.load(f)

@@ -11,8 +11,8 @@ if __name__ == "__main__":
     db_user_obj.db_user_create()
 
     # Создание всех таблиц в соответствии с заданием
-    TableDb_obj = TableDb('db_dating', 'user_dating')
-    TableDb_obj.create_tables()
+    table_db_obj = TableDb('db_dating', 'user_dating')
+    table_db_obj.create_tables()
 
     # Подключение к чату и сообщениям сообщества
     dating = Server(api_token=config.vk_api_token, group_id=config.vk_group_id, server_name="dating")
