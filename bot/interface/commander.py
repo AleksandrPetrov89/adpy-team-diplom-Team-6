@@ -35,7 +35,7 @@ class Commander:
     def input(self, msg):
         """
         Функция принимающая сообщения пользователя
-        :param msg: Сообщение
+        :param msg: Сообщение от пользователя
         :return: Ответ пользователю, отправившему сообщение
         """
 
@@ -54,7 +54,7 @@ class Commander:
         if self.mode == "search":
             return self.processing_mode_search(msg)
 
-        if self.mode == "photo":
+        if self.mode == "photo_1" or self.mode == "photo_2" or self.mode == "photo_3":
             return self.processing_mode_photo(msg)
 
         if self.mode == "age":
@@ -251,27 +251,15 @@ class Commander:
             return result
 
         if photo_1 in msg:
-            self.mode = "photo"
-            answer = photo_1
-            self.path = os.path.join("interface", "keyboards", "photo.json")
-            result = {"message": answer, "path": self.path, "attachment": None}
-            self.saving_parameters()
+            result = self.choose_photo(photo="photo_1")
             return result
 
         if photo_2 in msg:
-            self.mode = "photo"
-            answer = photo_2
-            self.path = os.path.join("interface", "keyboards", "photo.json")
-            result = {"message": answer, "path": self.path, "attachment": None}
-            self.saving_parameters()
+            result = self.choose_photo(photo="photo_2")
             return result
 
         if photo_3 in msg:
-            self.mode = "photo"
-            answer = photo_3
-            self.path = os.path.join("interface", "keyboards", "photo.json")
-            result = {"message": answer, "path": self.path, "attachment": None}
-            self.saving_parameters()
+            result = self.choose_photo(photo="photo_3")
             return result
 
         else:
@@ -287,22 +275,42 @@ class Commander:
         continue_searching = commander_config.continue_searching
 
         if like in msg:
-            answer = like
+            photo_id = None
+            if self.mode == "photo_1":
+                photo_id = self.candidate['photo_1']['id_photo']
+            elif self.mode == "photo_2":
+                photo_id = self.candidate['photo_2']['id_photo']
+            elif self.mode == "photo_3":
+                photo_id = self.candidate['photo_3']['id_photo']
+            if photo_id:
+                answer = self.obj_vk_api_requests.smash_like(candidate_id=self.candidate['id'], photo_id=photo_id)
+            else:
+                answer = "Неизвестная ошибка: режим photo, команда: Поставить лайк"
             result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
         if revoke_like in msg:
-            answer = revoke_like
+            photo_id = None
+            if self.mode == "photo_1":
+                photo_id = self.candidate['photo_1']['id_photo']
+            elif self.mode == "photo_2":
+                photo_id = self.candidate['photo_2']['id_photo']
+            elif self.mode == "photo_3":
+                photo_id = self.candidate['photo_3']['id_photo']
+            if photo_id:
+                answer = self.obj_vk_api_requests.delete_like(candidate_id=self.candidate['id'], photo_id=photo_id)
+            else:
+                answer = "Неизвестная ошибка: режим photo, команда: Убрать лайк"
             result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
         if continue_searching in msg:
             self.mode = "search"
-            answer = continue_searching
             self.path = os.path.join("interface", "keyboards", "search.json")
-            result = {"message": answer, "path": self.path, "attachment": None}
+            answer = self.candidate_data_output()
+            result = {"message": answer["message"], "path": self.path, "attachment": answer["attachment"]}
             self.saving_parameters()
             return result
 
@@ -424,3 +432,17 @@ class Commander:
         else:
             message += "\nФотографий нет!"
             return {"message": message, "attachment": None}
+
+    def choose_photo(self, photo):
+        if self.candidate.get(photo):
+            self.mode = photo
+            answer = "Выбранная фотография:\n"
+            photo_id = self.candidate[photo]['id_photo']
+            attachment = f"photo{self.candidate['id']}_{photo_id}"
+            self.path = os.path.join("interface", "keyboards", "photo.json")
+            result = {"message": answer, "path": self.path, "attachment": attachment}
+        else:
+            answer = f"У {self.candidate['first_name']} {self.candidate['last_name']} нет такой фотографии!"
+            result = {"message": answer, "path": self.path, "attachment": None}
+        self.saving_parameters()
+        return result
