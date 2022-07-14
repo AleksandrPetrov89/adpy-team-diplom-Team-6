@@ -4,11 +4,11 @@ import json
 from datetime import datetime
 from datetime import date
 import time
-from pprint import pprint
 
 import db.send_data
 import db.insert_data
 import db.insert_photo
+import db.delete_photo
 
 
 class VKApiRequests:
@@ -22,6 +22,7 @@ class VKApiRequests:
         self.db_insert_data_object = db.insert_data.DataIn('Script_Insert_SQL_table_data.sql',
                                                            'db_dating', 'user_dating')
         self.db_send_data_object = db.send_data.Parcel('db_dating', 'user_dating')
+        self.db_delete_photo_object = db.delete_photo.DelPhoto('db_dating', 'user_dating')
         self.user_token = vk_user_token
         self.user_id = vk_user_id
         self.requests_count = 0
@@ -351,8 +352,6 @@ class VKApiRequests:
             return None
         else:
             photo_dict = self._raw_photo_dict(photo_info)
-            for item, value in photo_dict.items():
-                self.db_insert_photo_object.get_photo(owner_id, value['photo_link'], item)
             return photo_dict
 
     def _raw_photo_dict(self, api_response):
@@ -375,7 +374,7 @@ class VKApiRequests:
 
         return result_dict
 
-    def smash_like(self, candidate_id, photo_id):
+    def smash_like(self, candidate_id, photo_id, photo_link):
         """Получает id кандидата и id фото на которую ставить лайк.
         Ставит лайк, отправляет данные в БД словарём в формате:
             {
@@ -385,6 +384,7 @@ class VKApiRequests:
              }
          }
         """
+        self.db_insert_photo_object.in_likeslist_table(self.user_id, candidate_id, photo_link, photo_id)
         method = 'likes.add'
         params = {
             'type': 'photo',
@@ -403,6 +403,7 @@ class VKApiRequests:
         Удаляет лайк, отправляет данные в БД словарём в формате:
         {user_id: photo_id}
         """
+        self.db_delete_photo_object.del_id_photolist(self.user_id, candidate_id, photo_id)
         method = 'likes.delete'
         params = {
             'type': 'photo',
@@ -447,18 +448,3 @@ def check_errors(response, user_id, func_name):
                            f'Ошибка: {resp_error}\n{errors[resp_error]}\n-------\n')
             result = 'Произошла непредвиденная ошибка! Пожалуйста, обратитесь к администратору или попробуйте позже.'
             return result
-
-
-if __name__ == '__main__':
-    id = 5325246
-    token = 'vk1.a.cGIhYvORtYWBin6V4Z4LDttSphiRM3e5arwtuWpL8nTzRLDEYzPj4AJtylUcv1AgfHp0PiGB_fD5c8k026vP2Sk6S-j4pYTdJlinHZIeRuUI4g0KpUAs5PGjDHDAn70m8hs7y__wkElMGnjny0aMAViKnPeheXFaWEJqCy_htKAYAKzUm03KhCUtz16YvevT'
-    t_1 = time.time()
-    test = VKApiRequests(id, token)
-    t_2 = time.time()
-    print((t_2 - t_1))
-    t_3 = time.time()
-    one = test.give_me_candidates()
-    t_4 = time.time()
-    print((t_4 - t_3))
-    print(len(one))
-    pprint(one)
