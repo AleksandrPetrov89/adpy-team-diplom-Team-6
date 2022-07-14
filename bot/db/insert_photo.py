@@ -8,23 +8,24 @@ class Photo:
     """
 
     # Функция инициализации класса Photo
-    def __init__(self, data_base, user, bot_user_user_id, user_id, photo_link, photo_id):
+    def __init__(self, data_base, user):
         self.data_base = data_base
         self.user = user
-        self.bot_user_user_id = bot_user_user_id
-        self.user_id = user_id
-        self.photo_link = photo_link
-        self.photo_id = photo_id
 
-    # Функция поиска спецсимвола % в ссылках и замена на %%, в противном случае данные не записываются в таблицы БД.
-    def search_link_symbol(self, bot_user_user_id, user_id, photo_link, photo_id):
+
+    # Функция заносит данные по фотографиям в таблицу photo_list.
+    def in_photolist_table(self, bot_user_user_id, user_id, photo_link, photo_id):
         """
-        :return: new_photo_link
+        Функция внесения в БД данных о фотографиях: ссылка, ID фотографии, ID пользователя. Если такие данные уже есть
+         в таблице, то ничего не заносится. Возвращается результат выполнения insert_status. Если запись сделана, то
+         True, если нет, то False.
+        :return: insert_status
         """
+
+        # Поиск спецсимвола % в ссылках и замена на %%, в противном случае данные не записываются в таблицы БД.
         dict_photo = {
             bot_user_user_id: [user_id, photo_link, photo_id]
         }
-
         new_photo_link = ''
         new_dict_photo = {}
 
@@ -37,18 +38,7 @@ class Photo:
                 else:
                     new_photo_link += symbol
             new_dict_photo[key] = [value[0], new_photo_link, value[2]]
-        return new_dict_photo
 
-    # Функция заносит данные по фотографиям в таблицу photo_list.
-    def in_photolist_table(self):
-        """
-        Функция внесения в БД данных о фотографиях: ссылка, ID фотографии, ID пользователя. Если такие данные уже есть
-         в таблице, то ничего не заносится. Возвращается результат выполнения insert_status. Если запись сделана, то
-         True, если нет, то False.
-        :return: insert_status
-        """
-        dict_obj = Photo(self.data_base, self.user)
-        dict_photo = dict_obj.search_link_symbol(self.bot_user_user_id, self.user_id, self.photo_link, self.photo_id)
         table_db_obj = TableDb(self.data_base, self.user)
         connect = table_db_obj.db_connect()
         insert_status = True
@@ -108,6 +98,5 @@ class Photo:
 
 
 # if __name__ == '__main__':
-    # Photo.search_link_symbol(Photo('db_dating', 'user_dating'))
     # Photo.in_photolist_table(Photo('db_dating', 'user_dating'))
     # Photo.in_likeslist_table(Photo('db_dating', 'user_dating'))
