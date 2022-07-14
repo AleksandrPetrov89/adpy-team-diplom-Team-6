@@ -28,6 +28,8 @@ class Commander:
             self.candidate = {}
             self.list_elected = []
             self.elected_id = None
+            self.list_blacklist = []
+            self.blacklist_id = None
             self.counter = 0
 
     def input(self, msg):
@@ -142,22 +144,34 @@ class Commander:
         continue_searching = commander_config.continue_searching
 
         if next_contender in msg:
-            answer = next_contender
+            if self.list_blacklist == []:
+                answer = f"{self.user_name}, это невозможно! Ваш черный список пуст!"
+                self.blacklist_id = None
+            else:
+                if self.counter == (len(self.list_blacklist) - 1):
+                    answer = f"{self.user_name}, больше в черном списке никого нет!"
+                else:
+                    self.counter += 1
+                    self.blacklist_id = self.list_blacklist[self.counter]
+                    answer = f"https://vk.com/id{self.blacklist_id}"
             result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
         if remove_blacklist in msg:
-            answer = remove_blacklist
+            db = Disposal('db_dating', 'user_dating')
+            db.del_id_blacklist(user_id=self.id, del_user_id=self.blacklist_id)
+            answer = f"Пользователь https://vk.com/id{self.blacklist_id} удален из черного списка!"
             result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
 
         if continue_searching in msg:
             self.mode = "search"
-            answer = continue_searching
             self.path = os.path.join("interface", "keyboards", "search.json")
-            result = {"message": answer, "path": self.path, "attachment": None}
+            answer = self.candidate_data_output()
+            result = {"message": answer["message"], "path": self.path, "attachment": answer["attachment"]}
+            self.counter = 0
             self.saving_parameters()
             return result
 
@@ -220,9 +234,18 @@ class Commander:
             return result
 
         if blacklist in msg:
-            self.mode = "blacklist"
-            answer = blacklist
-            self.path = os.path.join("interface", "keyboards", "blacklist.json")
+            db = Parcel('db_dating', 'user_dating')
+            self.list_blacklist = db.black_list_output(user_id=self.id)
+            if self.list_blacklist == []:
+                answer = f"{self.user_name}, Ваш черный список пуст!"
+                self.blacklist_id = None
+            else:
+                self.counter = 0
+                self.blacklist_id = self.list_blacklist[self.counter]
+                answer = f"{self.user_name}, Ваш черный список:\n" \
+                         f"https://vk.com/id{self.blacklist_id}"
+                self.path = os.path.join("interface", "keyboards", "blacklist.json")
+                self.mode = "blacklist"
             result = {"message": answer, "path": self.path, "attachment": None}
             self.saving_parameters()
             return result
@@ -340,7 +363,9 @@ class Commander:
             "self.candidate": self.candidate,
             "self.list_elected": self.list_elected,
             "self.elected_id": self.elected_id,
-            "self.counter": self.counter
+            "self.counter": self.counter,
+            "self.list_blacklist": self.list_blacklist,
+            "self.blacklist_id": self.blacklist_id
         }
         with open(path_file, 'w', encoding='utf-8') as file:
             json.dump(dict_options, file)
@@ -356,6 +381,8 @@ class Commander:
             self.list_elected = dict_options["self.list_elected"]
             self.elected_id = dict_options["self.elected_id"]
             self.counter = dict_options["self.counter"]
+            self.list_blacklist = dict_options["self.list_blacklist"]
+            self.blacklist_id = dict_options["self.blacklist_id"]
 
     def obtaining_candidate(self):
         dict_candidates = self.obj_vk_api_requests.give_me_candidates()
