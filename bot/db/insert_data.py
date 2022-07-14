@@ -100,8 +100,9 @@ class DataIn:
         ID выбранного пользователя помещается в поле user_data_user_id.
         Также осуществляется проверка на дублирование. В случае повторного внесения
         возвращается соответствующая информация.
-        :return: insert_result, comment_result
+        :return: list_insert_result
         """
+        list_insert_result = []
         dict_electlist_user = {user_bot: elected_user}
         table_db_obj = TableDb(self.data_base, self.user)
         connect = table_db_obj.db_connect()
@@ -129,7 +130,8 @@ class DataIn:
                 insert_result = False
             else:
                 connect.execute(req_sql)
-        return insert_result, comment_result
+            list_insert_result.append([insert_result, comment_result])
+        return list_insert_result
 
     # Функция заносит данные переданного пользователя в Чёрный список (black_list).
     # Заблокированный пользователь вносится в поле user_data_user_id с проверкой дублирования.
@@ -139,8 +141,9 @@ class DataIn:
         ID заблокированного пользователя помещается в поле user_data_user_id.
         Также осуществляется проверка на дублирование. В случае повторного внесения
         возвращается соответствующая информация.
-        :return: insert_result, comment_result
+        :return: list_insert_result
         """
+        list_insert_result = []
         dict_blacklist_user = {user_bot: blacklist_user}
         table_db_obj = TableDb(self.data_base, self.user)
         connect = table_db_obj.db_connect()
@@ -168,7 +171,8 @@ class DataIn:
                 insert_result = False
             else:
                 connect.execute(req_sql)
-        return insert_result, comment_result
+            list_insert_result.append([insert_result, comment_result])
+        return list_insert_result
 
 
 if __name__ == '__main__':

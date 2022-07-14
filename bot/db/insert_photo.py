@@ -12,30 +12,18 @@ class Photo:
         self.data_base = data_base
         self.user = user
 
-    # Функция получения фото в виде словаря.
-    def get_photo(self, bot_user_user_id=666666666, user_id=444444444,
-                  photo_link='https://vk.com/id715243021?z=photo715243021_457239017%2Fphotos555666777',
-                  photo_id=111111111):
+    # Функция поиска спецсимвола % в ссылках и замена на %%, в противном случае данные не записываются в таблицы БД.
+    def search_link_symbol(self, bot_user_user_id, user_id, photo_link, photo_id):
         """
-        Функция get_photo принимает на вход 4 параметра. bot_user_user_id - это id пользователя, который общается с
-        ботом и выбирает кандидатов. user_id - это id пользователя, которого выбрали, ссылка на фото и id фото которого
-        передаются в функцию, как 3-й и 4-й параметры.
-        :return: dict_photo
+        :return: new_photo_link
         """
         dict_photo = {
             bot_user_user_id: [user_id, photo_link, photo_id]
         }
-        return dict_photo
 
-    # Функция поиска спецсимвола % в ссылках и замена на %%, в противном случае данные не записываются в таблицы БД.
-    def search_link_symbol(self):
-        """
-        :return: new_photo_link
-        """
         new_photo_link = ''
         new_dict_photo = {}
-        photo_obj = Photo(self.data_base, self.user)
-        dict_photo = photo_obj.get_photo()
+
         for key, value in dict_photo.items():
             link = value[1]
             for symbol in link:
@@ -83,7 +71,7 @@ class Photo:
         return insert_status
 
     # Функция заносит данные по "лайкнутым" фотографиям в таблицу likes_list.
-    def in_likeslist_table(self):
+    def in_likeslist_table(self, bot_user_user_id, user_id, photo_link, photo_id):
         """
         Функция внесения в БД данных о фотографиях, на которые поставили "лайк": ID пользователя, который поставил лайк,
         а также ID фотографии, которая понравилась.
@@ -91,8 +79,9 @@ class Photo:
         """
         id_list = []
         check_insert_list = []
-        dict_obj = Photo(self.data_base, self.user)
-        dict_photo = dict_obj.get_photo()
+        dict_photo = {
+            bot_user_user_id: [user_id, photo_link, photo_id]
+        }
         table_db_obj = TableDb(self.data_base, self.user)
         connect = table_db_obj.db_connect()
         insert_status = True

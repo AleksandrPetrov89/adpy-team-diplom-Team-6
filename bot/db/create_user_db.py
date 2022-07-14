@@ -35,8 +35,9 @@ class DatingDb:
         """
         Функция db_user_create создаёт базу данных 'db_dating'
          и пользователя 'user_dating'.
-        :return: result_db, result_user
+        :return: list_db_user_names
         """
+        list_db_user_names = []
         pswd = DatingDb.sql_psw()
         db = f'postgresql://postgres:{pswd}@localhost:5432/{self.data_base}'
         engine = sqlalchemy.create_engine(db)
@@ -50,4 +51,8 @@ class DatingDb:
         except sqlalchemy.exc.ProgrammingError:
             result_user = f'User "{self.user}" already exist.'
         connection.execute(f"ALTER DATABASE {self.data_base} OWNER TO {self.user};")
-        return result_db, result_user
+        list_db_user_names.append(self.data_base)
+        list_db_user_names.append((self.user))
+        list_db_user_names.append(result_db)
+        list_db_user_names.append(result_user)
+        return list_db_user_names
