@@ -1,1 +1,1 @@
-Пароль от user postgres
+Пароль от пользователя postgres

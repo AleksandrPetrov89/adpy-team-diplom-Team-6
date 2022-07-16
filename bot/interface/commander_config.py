@@ -1,5 +1,6 @@
 from interface.config import id_applications, version_vk_api
 
+# Команды, привязанные к кнопкам
 start = "Начать поиск"
 next_contender = "Следующий/ая"
 favorites = "В избранное"

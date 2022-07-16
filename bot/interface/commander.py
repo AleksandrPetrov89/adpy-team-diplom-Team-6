@@ -10,8 +10,20 @@ from db.delete_data import Disposal
 
 
 class Commander:
+    """
+    Обеспечивает логику общения с пользователем
+    """
 
-    def __init__(self, vk_id, user_name):
+    def __init__(self, vk_id: int, user_name: str):
+        """
+        Инициализация класса "Commander"
+
+        Если существует файл с параметрами для данного пользователя ВК, то self-переменные загружаются из него.
+        Если файл отсутствует, то self-переменные принимают значения по умолчанию
+
+        :param vk_id: id пользователя ВК
+        :param user_name: Имя пользователя ВК
+        """
 
         self.id = vk_id
         self.user_name = user_name
@@ -32,11 +44,12 @@ class Commander:
             self.blacklist_id = None
             self.counter = 0
 
-    def input(self, msg):
+    def input(self, msg: str) -> dict:
         """
-        Функция принимающая сообщения пользователя
-        :param msg: Сообщение от пользователя
-        :return: Ответ пользователю, отправившему сообщение
+        Метод принимающий сообщения/команды и отвечающий за логику ответов
+
+        :param msg: Входящее сообщение
+        :return: Ответ в виде словаря, сформированный методом
         """
 
         if self.mode == "default":
@@ -63,7 +76,16 @@ class Commander:
         if self.mode == "city":
             return self.processing_mode_city(msg)
 
-    def processing_mode_token(self, msg):
+    def processing_mode_token(self, msg: str) -> dict:
+        """
+        Получение токена от пользователя
+
+        Если во входящем сообщении обнаружен токен, то он сохраняется и проводится проверка
+        есть ли в ВК данные о возрасте и городе проживания пользователя.
+        Если токен не обнаружен, предлагается попробовать указать его заново.
+
+        :param msg: Входящее сообщение
+        """
 
         request_token = commander_config.request_token
         pattern = "access_token=([^&]*)"
@@ -77,7 +99,16 @@ class Commander:
             self.saving_parameters()
             return result
 
-    def processing_mode_default(self, msg):
+    def processing_mode_default(self, msg: str) -> dict:
+        """
+        Первоначальный контакт с пользователем
+
+        Если приходит команда start = "Начать поиск", режим меняется на "token",
+        в ответ возвращается инструкция по получению токена от пользователя.
+        Если приходит что-то иное - инструкция, как начать поиск.
+
+        :param msg: Входящее сообщение
+        """
         start = commander_config.start
         request_token = commander_config.request_token
         if start in msg:
@@ -94,7 +125,19 @@ class Commander:
             self.saving_parameters()
             return result
 
-    def processing_mode_favorites(self, msg):
+    def processing_mode_favorites(self, msg: str) -> dict:
+        """
+        Логика работы бота в подменю "Список избранных"
+
+        Если приходит команда next_contender = "Следующий/ая" - выводится ссылка на следующего
+        кандидата из списка избранных. Если список избранных пуст или дошли до конца списка -
+        выводится соответствующее сообщение.
+        Если приходит команда remove = "Удалить из избранного" - текущий кандидат из избранного удаляется.
+        Если приходит команда continue_searching = "Продолжить поиск" - происходит возврат к меню
+        поиска кандидатов и выводится тот кандидат, на котором перешли в другое меню.
+
+        :param msg: Входящее сообщение
+        """
 
         next_contender = commander_config.next_contender
         remove = commander_config.remove
@@ -138,7 +181,20 @@ class Commander:
             self.saving_parameters()
             return result
 
-    def processing_mode_blacklist(self, msg):
+    def processing_mode_blacklist(self, msg: str) -> dict:
+        """
+        Логика работы бота в подменю "Черный список"
+
+        Если приходит команда next_contender = "Следующий/ая" - выводится ссылка на следующего
+        кандидата из черного списка. Если черный список пуст или дошли до конца списка -
+        выводится соответствующее сообщение.
+        Если приходит команда remove_blacklist = "Удалить из ЧС" - текущий кандидат из избранного удаляется.
+        Если приходит команда continue_searching = "Продолжить поиск" - происходит возврат к меню
+        поиска кандидатов и выводится тот кандидат, на котором перешли в другое меню.
+
+        :param msg: Входящее сообщение
+        """
+
         next_contender = commander_config.next_contender
         remove_blacklist = commander_config.remove_blacklist
         continue_searching = commander_config.continue_searching
@@ -181,7 +237,26 @@ class Commander:
             self.saving_parameters()
             return result
 
-    def processing_mode_search(self, msg):
+    def processing_mode_search(self, msg: str) -> dict:
+        """
+        Логика работы бота в меню поиска кандидатов
+
+        Если приходит команда next_contender = "Следующий/ая" - выводится следующий кандидат в формате:
+        Имя Фамилия
+        ссылка на профиль
+        три(доступное количество) фотографии в виде attachment(https://dev.vk.com/method/messages.send).
+        Если поиск завершен - выводится предупреждение о начале поиска заново.
+        Если приходит команда favorites = "В избранное" - текущий кандидат добавляется в список избранных.
+        Если приходит команда add_blacklist = "В черный список" - текущий кандидат добавляется в ЧС.
+        Если приходит команда favorites_list = "Список избранных" - происходит переход в подменю "Список избранных"
+        и выводится первый кандидат из этого списка. Если список избранных пуст - выводится соответствующее сообщение.
+        Если приходит команда blacklist = "Черный список" - происходит переход в подменю "Черный список"
+        и выводится первый кандидат из этого списка. Если ЧС пуст - выводится соответствующее сообщение.
+        Если приходит команда photo_1, photo_2, photo_3 = "Фото 1", "Фото 2", "Фото 3" - происходит проверка:
+         есть ли у кандидата такое фото, и если есть происходит переход в подменю "Фото"
+
+        :param msg: Входящее сообщение
+        """
 
         next_contender = commander_config.next_contender
         favorites = commander_config.favorites
@@ -193,10 +268,7 @@ class Commander:
         photo_3 = commander_config.photo_3
 
         if next_contender in msg:
-            self.obtaining_candidate()
-            answer = self.candidate_data_output()
-            result = {"message": answer["message"], "path": self.path, "attachment": answer["attachment"]}
-            self.saving_parameters()
+            result = self.obtaining_candidate()
             return result
 
         if favorites in msg:
@@ -268,7 +340,17 @@ class Commander:
             self.saving_parameters()
             return result
 
-    def processing_mode_photo(self, msg):
+    def processing_mode_photo(self, msg: str) -> dict:
+        """
+        Логика работы бота в подменю "Фото"
+
+        Если приходит команда like = "Поставить лайк" - исходя из режима, ставит лайк на выбранное фото.
+        Если приходит команда revoke_like = "Убрать лайк" - исходя из режима, убирает лайк с выбранного фото.
+        Если приходит команда continue_searching = "Продолжить поиск" - происходит возврат к меню
+        поиска кандидатов и выводится тот кандидат, на котором перешли в другое меню.
+
+        :param msg: Входящее сообщение
+        """
 
         like = commander_config.like
         revoke_like = commander_config.revoke_like
@@ -276,14 +358,19 @@ class Commander:
 
         if like in msg:
             photo_id = None
+            photo_link = None
             if self.mode == "photo_1":
                 photo_id = self.candidate['photo_1']['id_photo']
+                photo_link = self.candidate['photo_1']['link_photo']
             elif self.mode == "photo_2":
                 photo_id = self.candidate['photo_2']['id_photo']
+                photo_link = self.candidate['photo_2']['link_photo']
             elif self.mode == "photo_3":
                 photo_id = self.candidate['photo_3']['id_photo']
+                photo_link = self.candidate['photo_3']['link_photo']
             if photo_id:
-                answer = self.obj_vk_api_requests.smash_like(candidate_id=self.candidate['id'], photo_id=photo_id)
+                answer = self.obj_vk_api_requests.smash_like(candidate_id=self.candidate['id'],
+                                                             photo_id=photo_id, photo_link=photo_link)
             else:
                 answer = "Неизвестная ошибка: режим photo, команда: Поставить лайк"
             result = {"message": answer, "path": self.path, "attachment": None}
@@ -320,14 +407,19 @@ class Commander:
             self.saving_parameters()
             return result
 
-    def age_city_check(self):
+    def age_city_check(self) -> dict:
+        """
+        Метод проверки наличия данных в ВК о возрасте и городе проживания пользователя.
+
+        Если все данные есть, то переходим к поиску кандидатов.
+        Если не хватает возраста, то переходим к режиму и методу ввода возраста пользователем.
+        Если не хватает данных о городе проживания, то переходим к режиму и методу ввода города пользователем.
+        """
+
         if self.obj_vk_api_requests.is_city_age_exists() == 0:
             self.mode = "search"
             self.path = os.path.join("interface", "keyboards", "search.json")
-            self.obtaining_candidate()
-            answer = self.candidate_data_output()
-            result = {"message": answer["message"], "path": self.path, "attachment": answer["attachment"]}
-            self.saving_parameters()
+            result = self.obtaining_candidate()
             return result
         if self.obj_vk_api_requests.is_city_age_exists() == 1 or self.obj_vk_api_requests.is_city_age_exists() == 2:
             self.mode = "age"
@@ -344,7 +436,17 @@ class Commander:
             self.saving_parameters()
             return result
 
-    def processing_mode_age(self, msg):
+    def processing_mode_age(self, msg: str) -> dict:
+        """
+        Сохраняет данные о возрасте, полученные в сообщении.
+
+        Если в сообщении найдено число от 0 до 150, то оно сохраняется как возраст пользователя.
+        Затем, в любом случае производит повторную проверку на наличие данных о возрасте
+        и городе проживания пользователя.
+
+        :param msg: Входящее сообщение
+        """
+
         pattern_age = "[1-9][0-9]{0,2}"
         if re.search(pattern_age, msg):
             age = re.search(pattern_age, msg).group(0)
@@ -352,7 +454,17 @@ class Commander:
                 self.obj_vk_api_requests.give_me_city_age(age=age)
         return self.age_city_check()
 
-    def processing_mode_city(self, msg):
+    def processing_mode_city(self, msg: str) -> dict:
+        """
+        Сохраняет данные о городе, полученные в сообщении.
+
+        Если в сообщении найдено название города, то оно сохраняется.
+        Затем, в любом случае производит повторную проверку на наличие данных о возрасте
+        и городе проживания пользователя.
+
+        :param msg: Входящее сообщение
+        """
+
         pattern_city = "[А-Я][а-я]+-*[А-Я]*[а-я]*[0-9]*"
         if re.search(pattern_city, msg):
             city = re.search(pattern_city, msg).group(0)
@@ -360,6 +472,13 @@ class Commander:
         return self.age_city_check()
 
     def saving_parameters(self):
+        """
+        Сохраняет self-параметры в виде словаря в файл "options_{id пользователя},
+        находящийся в директории: interface -> options.
+
+        Если каталога "options" не существует, то создает его.
+        """
+
         path_options = os.path.join("interface", "options")
         if os.path.exists(path_options) is False:
             os.mkdir(path_options)
@@ -379,6 +498,11 @@ class Commander:
             json.dump(dict_options, file)
 
     def reading_parameters(self):
+        """
+        Считывает self-параметры в виде словаря из файла "options_{id пользователя},
+        находящегося в директории: interface -> options.
+        """
+
         path_file = os.path.join("interface", "options", f"options_{self.id}.txt")
         with open(path_file, 'r', encoding='utf-8') as file:
             dict_options = json.load(file)
@@ -392,24 +516,56 @@ class Commander:
             self.list_blacklist = dict_options["self.list_blacklist"]
             self.blacklist_id = dict_options["self.blacklist_id"]
 
-    def obtaining_candidate(self):
-        dict_candidates = self.obj_vk_api_requests.give_me_candidates()
-        dict_photo = dict_candidates[list(dict_candidates.keys())[0]]["photo_links"]
-        dict_candidate = {
-            "id": list(dict_candidates.keys())[0],
-            "first_name": dict_candidates[list(dict_candidates.keys())[0]]["first_name"],
-            "last_name": dict_candidates[list(dict_candidates.keys())[0]]["last_name"],
-            "link_to_profile": f"https://vk.com/id{list(dict_candidates.keys())[0]}"
-        }
-        for count, photo_key in enumerate(dict_photo):
-            dict_candidate[f"photo_{count + 1}"] = {
-                "id_photo": photo_key,
-                "link_photo": dict_photo[photo_key]
-            }
-        self.candidate = dict_candidate
-        self.obj_vk_api_requests.save_session(self.candidate["id"])
+    def obtaining_candidate(self) -> dict:
+        """
+        Вызывает метод класса VKApiRequests, осуществляющий выдачу кандидатов в пару к пользователю и
+        возвращает одного из кандидатов в формате:
+        Имя Фамилия
+        ссылка на профиль
+        три(доступное количество) фотографии в виде attachment(https://dev.vk.com/method/messages.send)
 
-    def candidate_data_output(self):
+        Обеспечивает, чтобы словарь с кандидатами не был пустым.
+        Если метод obj_vk_api_requests.give_me_candidates() класса VKApiRequests возвращает None, то начинает поиск
+        заново, предупредив об этом пользователя.
+        """
+
+        dict_candidates = self.obj_vk_api_requests.give_me_candidates()
+        while dict_candidates == {}:
+            dict_candidates = self.obj_vk_api_requests.give_me_candidates()
+        if dict_candidates is None:
+            answer = f"{self.user_name}, Вы просмотрели всех подходящих Вам кандидатов! " \
+                     f"Нажмите 'Следующий/ая', чтобы начать поиск заново!"
+            self.obj_vk_api_requests.offset = 0
+            result = {"message": answer, "path": self.path, "attachment": None}
+        else:
+            dict_photo = dict_candidates[list(dict_candidates.keys())[0]]["photo_links"]
+            dict_candidate = {
+                "id": list(dict_candidates.keys())[0],
+                "first_name": dict_candidates[list(dict_candidates.keys())[0]]["first_name"],
+                "last_name": dict_candidates[list(dict_candidates.keys())[0]]["last_name"],
+                "link_to_profile": f"https://vk.com/id{list(dict_candidates.keys())[0]}"
+            }
+            for count, photo_key in enumerate(dict_photo):
+                dict_candidate[f"photo_{count + 1}"] = {
+                    "id_photo": photo_key,
+                    "link_photo": dict_photo[photo_key]
+                }
+            self.candidate = dict_candidate
+            self.obj_vk_api_requests.save_session(self.candidate["id"])
+            answer = self.candidate_data_output()
+            result = {"message": answer["message"], "path": self.path, "attachment": answer["attachment"]}
+        self.saving_parameters()
+        return result
+
+    def candidate_data_output(self) -> dict:
+        """
+        Проводит проверку на количество фотографий у кандидата и
+        осуществляет преобразование данных о кандидате к формату:
+        Имя Фамилия
+        ссылка на профиль
+        три(доступное количество) фотографии в виде attachment(https://dev.vk.com/method/messages.send)
+        """
+
         message = f"{self.candidate['first_name']} {self.candidate['last_name']}\n{self.candidate['link_to_profile']}"
         owner_id = self.candidate['id']
         if self.candidate.get("photo_3"):
@@ -433,7 +589,13 @@ class Commander:
             message += "\nФотографий нет!"
             return {"message": message, "attachment": None}
 
-    def choose_photo(self, photo):
+    def choose_photo(self, photo: str) -> dict:
+        """
+        Определяет с какой фотографией предстоит работать (№ 1, № 2 или № 3) и
+        проверяет наличие данной фотографии у кандидата.
+
+        :param photo: Определяет с какой фотографией предстоит работать "photo_1", "photo_2" или "photo_3"
+        """
         if self.candidate.get(photo):
             self.mode = photo
             answer = "Выбранная фотография:\n"

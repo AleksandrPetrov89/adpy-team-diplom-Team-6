@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS user_data (
 	last_name VARCHAR(40),
                 sex INTEGER,
 	city VARCHAR(60),
-	token VARCHAR(120),
+	token VARCHAR(200),
 	groups INTEGER,
                 interests TEXT,
 	music TEXT,
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS black_list (
 
 CREATE TABLE IF NOT EXISTS photo_list (
 	id SERIAL PRIMARY KEY,
-                photo_link VARCHAR(120),
+                photo_link VARCHAR(250),
 	photo_id INTEGER,
 	user_data_user_id INTEGER NOT NULL REFERENCES user_data(user_id)
 );

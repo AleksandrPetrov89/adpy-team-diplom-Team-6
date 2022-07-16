@@ -3,4 +3,6 @@ tmp/
 tmp.log
 token*.txt
 /db/sqlpsw.txt
-/options/
+interface/options
+/logs
+Integration/Saved_sessions

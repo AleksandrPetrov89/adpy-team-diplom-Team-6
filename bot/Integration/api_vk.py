@@ -135,7 +135,7 @@ class VKApiRequests:
     def _get_city_id(self, name):
         """Внутренний метод получения id города по названию
         Принимает название города в формате str
-        Выводит id ы формате int
+        Выводит id в формате int
         """
         method = 'database.getCities'
         params = {
@@ -253,6 +253,9 @@ class VKApiRequests:
         }
         match_users_raw = requests.get(VKApiRequests.URL + method, params=params).json()
         check_errors(match_users_raw, self.user_id, '_get_candidates')
+        if not match_users_raw['response']['items']:
+            self.match_users = None
+            return
         for users in match_users_raw['response']['items']:
             m_user_id = users['id']
             blacklist = self.db_send_data_object.black_list_output(self.user_id)
@@ -325,7 +328,7 @@ class VKApiRequests:
                                 self.match_users[m_user_id] = match_users_dict
                     except Exception:
                         continue
-        self.offset += 49
+        self.offset += 50
 
     def _get_photo_links(self, owner_id):
         """Внутренний метод получения ссылок на фотографии с самым большим кол-вом лайков

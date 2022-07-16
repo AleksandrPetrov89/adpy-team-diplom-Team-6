@@ -32,26 +32,29 @@ class FuncTest(unittest.TestCase):
     которого нужно удалить из списка Избранных).
     """
 
-    # Метод запускается перед запуском тестового класса.
+    # Метод исполняется перед запуском тестового класса.
     @classmethod
     def setUpClass(cls) -> None:
         """Служебный метод unittest. Запускается перед запуском тестового класса."""
         print(f"Начинается запуск тестового класса {__class__.__name__}")
 
-    # Функция запускается по завершению всех тестов в классе.
+    # Метод исполняется по завершении всех тестов в классе.
     @classmethod
     def tearDownClass(cls) -> None:
+        """Служебный метод unittest. Исполняется по завершении всех тестов в классе."""
         print(f"Закончены все тесты в классе {__class__.__name__}")
 
-    # Функция запускается перед выполнением каждого теста в классе.
+    # Метод запускается перед выполнением каждого теста в классе.
     def setUp(self) -> None:
+        """Служебный метод unittest. Запускается перед выполнением каждого теста в классе."""
         print("Начат очередной тест в классе!")
 
-    # Функция запускается после каждого теста в классе.
+    # Метод запускается после каждого теста в классе.
     def tearDown(self) -> None:
+        """Служебный метод unittest. Запускается после каждого теста в классе."""
         print("Закончен очередной тест в классе!")
 
-    # Тестирование функции db_user_create в методе create_user_db.py.
+    # Тестирование метода db_user_create в модуле create_user_db.py.
     @parameterized.expand(
         [
             'db_dating',
@@ -59,11 +62,15 @@ class FuncTest(unittest.TestCase):
         ]
     )
     def test_db_user_create(self, db_user_name):
+        """
+        Метод тестирования метода db_user_create в модуле create_user_db.py.
+        Используется параметр: db_user_name (str) - название базы данных и название пользователя БД.
+        """
         table_db_obj = DatingDb('db_dating', 'user_dating')
         list_db_user = table_db_obj.db_user_create()
         self.assertIn(db_user_name, list_db_user)
 
-    # Тестирование функции create_tables в методе create_table.py.
+    # Тестирование метода create_tables в модуле create_table.py.
     @parameterized.expand(
         [
             'user_data',
@@ -74,24 +81,39 @@ class FuncTest(unittest.TestCase):
         ]
     )
     def test_create_tables(self, table_name):
+        """
+        Метод тестирования метода create_tables в модуле create_table.py.
+        Параметр: table_name (str) - название таблицы БД.
+        """
         table_db_obj = TableDb('db_dating', 'user_dating')
         list_name_tables = table_db_obj.create_tables()
         self.assertIn(table_name, list_name_tables)
 
-    # Тестирование функции in_elected_table в методе insert_data.py.
+    # Тестирование метода in_elected_table в модуле insert_data.py.
     def test_in_elected_table(self):
+        """
+        Метод тестирования метода in_elected_table в модуле insert_data.py. Параметры при тестировании не используются.
+        """
         insert_data_obj = DataIn('Script_Insert_SQL_table_data.sql', 'db_dating', 'user_dating')
         list_name_tables = insert_data_obj.in_elected_table()
         self.assertEqual(list_name_tables[0], [True, 'Запись 987654320 внесена в список Избранных!'])
 
-    # Тестирование функции black_list_output в методе send_data.py.
-    def test_black_list_output(self, user_bot=123456789, blacklist_user=987654321):
+    # Тестирование метода black_list_output в модуле send_data.py.
+    def test_black_list_output(self, user_bot, blacklist_user):
+        """
+        Метод тестирования функции black_list_output в методе send_data.py.
+        Параметры: user_bot (int) - id пользователя бота, blacklist_user (int) - id пользователя из чёрного списка.
+        """
         send_data_obj = Parcel('db_dating', 'user_dating')
         list_user = send_data_obj.black_list_output(user_bot)
         self.assertIn(blacklist_user, list_user)
 
-    # Тестирование функции del_id_electlist из метода delete_data.
-    def test_del_id_electlist(self, user_id=123456780, del_user_id=987654320):
+    # Тестирование метода del_id_electlist из модуля delete_data.
+    def test_del_id_electlist(self, user_id, del_user_id):
+        """
+        Метод тестирования метода del_id_electlist из модуля delete_data. Параметры: user_id (int) - id пользователя
+        бота, del_user_id (int) - id пользователя, которого нужно удалить из списка Избранных.
+        """
         del_user_obj = Disposal('db_dating', 'user_dating')
         after_del_list = del_user_obj.del_id_electlist(user_id, del_user_id)
         compare_list = []

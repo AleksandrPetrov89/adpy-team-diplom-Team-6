@@ -1,8 +1,11 @@
-vk_group_id = 214303550
+# id сообщества/группы в ВК
+vk_group_id = id сообщества
 
-vk_api_token = "vk1.a.VtfkEg-jzNg8Fj6eP6VPWNP9_gWt4Aa1fvgNKQdnYbov1NFYysSs-iE3wu15kZSifPSoA2jlsFNdc-ILh07EnnX0LXfrk" \
-               "1KYhjToBWBIeykuFKQgjDdDkp4ixApxr-KOXBITU_0zhxEEfKfkSh6lio1KspH0uuqqbF09V_xejo-lVk5v-OVWMZE6fBGziVBu"
+# Токен сообщества/группы в ВК
+vk_api_token = "Токен сообщества ВК"
 
-id_applications = 8209029
+# id приложения в ВК, которое совершает действия от имени пользователя бота
+id_applications = id приложения
 
+# Используемая версия ВК API
 version_vk_api = 5.131
