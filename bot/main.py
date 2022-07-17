@@ -1,4 +1,8 @@
-from interface import config
+"""
+Программа чат-бот для знакомств в социальной сети Вконтакте
+"""
+
+from interface.config import vk_api_token, vk_group_id
 from interface.server import Server
 from db.create_user_db import DatingDb
 from db.create_table import TableDb
@@ -15,5 +19,5 @@ if __name__ == "__main__":
     table_db_obj.create_tables()
 
     # Подключение к чату и сообщениям сообщества
-    dating = Server(api_token=config.vk_api_token, group_id=config.vk_group_id, server_name="dating")
+    dating = Server(api_token=vk_api_token, group_id=vk_group_id, server_name="dating")
     dating.start()

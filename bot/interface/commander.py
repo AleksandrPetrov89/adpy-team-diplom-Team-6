@@ -149,7 +149,7 @@ class Commander:
                 self.elected_id = None
             else:
                 if self.counter == (len(self.list_elected) - 1):
-                    answer = f"{self.user_name}, больше избранных кандидатов нет!"
+                    answer = f"{self.user_name}, Вы дошли до конца списка избранных кандидатов!"
                 else:
                     self.counter += 1
                     self.elected_id = self.list_elected[self.counter]
@@ -205,7 +205,7 @@ class Commander:
                 self.blacklist_id = None
             else:
                 if self.counter == (len(self.list_blacklist) - 1):
-                    answer = f"{self.user_name}, больше в черном списке никого нет!"
+                    answer = f"{self.user_name}, Вы дошли до конца черного списка!"
                 else:
                     self.counter += 1
                     self.blacklist_id = self.list_blacklist[self.counter]
